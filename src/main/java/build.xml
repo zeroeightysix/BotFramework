@@ -1,0 +1,23 @@
+<project name="MyProject" default="init" basedir=".">
+    <description>
+        simple example increment build variable
+    </description>
+    <!-- set global properties for this build -->
+    <property name="src" location="../java"/>
+
+    <target name="init">
+        <echo file="myAntOut.txt">My first ant ${src} ${line.separator}</echo>
+
+        <buildnumber/>
+        <replaceregexp file="${src}/me/zeroeightsix/botframework/MinecraftBot.java"
+                       match="public\s+static\s+final\s+String\s+BUILD_NUMBER\s+=\s+&quot;.*&quot;;"
+                       replace="public static final String BUILD_NUMBER = &quot;${build.number}&quot;;"
+                       byline="true"
+        />
+        <replaceregexp file="${src}/../../../pom.xml"
+                       match="&lt;version>.*-SNAPSHOT&lt;/version>"
+                       replace="&lt;version>${build.number}-SNAPSHOT&lt;/version>"
+                       byline="true"
+        />
+    </target>
+</project>
