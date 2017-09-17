@@ -9,11 +9,11 @@ public interface Flaggable {
     HashMap<Integer, Boolean> flags = new HashMap<>();
     HashMap<Integer, Double> values = new HashMap<>();
 
-    public void fsetEnabled(int FLAG, boolean enabled);
-    public boolean fisEnabled(int FLAG);
-    public boolean fcondition(int FLAG, boolean extra);
-    public boolean fanticondition(int FLAG, boolean extra);
+    void fsetEnabled(int FLAG, boolean enabled);
+    boolean fisEnabled(int FLAG);
+    boolean fcondition(int FLAG, boolean extra);
+    boolean fanticondition(int FLAG, boolean extra);
 
-    public double vgetValue(int FLAG);
-    public void vsetValue(int FLAG, double value);
+    double vgetValue(int FLAG);
+    void vsetValue(int FLAG, double value);
 }

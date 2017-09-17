@@ -22,6 +22,7 @@ import jline.console.ConsoleReader;
 import me.zeroeightsix.botframework.cfg.json.JSONArray;
 import me.zeroeightsix.botframework.cfg.json.JSONObject;
 import me.zeroeightsix.botframework.event.ChatEvent;
+import me.zeroeightsix.botframework.flag.AbstractFlaggable;
 import me.zeroeightsix.botframework.locale.Locale;
 import me.zeroeightsix.botframework.locale.text.ITextComponent;
 import me.zeroeightsix.botframework.plugin.Plugin;
@@ -34,7 +35,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Arrays;
 
-public class MinecraftBot {
+public class MinecraftBot extends AbstractFlaggable {
 
     @Parameter(names = {"-username", "-u"}, description = "Username or email for authentication", required = true)
     public String USERNAME = null;
@@ -83,8 +84,12 @@ public class MinecraftBot {
 
     boolean logged_in = false;
 
+    public static final int FLAG_RECONNECT_TIME = 0;
+
     public static void main(String[] args) {
         INSTANCE = new MinecraftBot();
+
+        INSTANCE.vsetValue(FLAG_RECONNECT_TIME, 10000); // 10 Seconds
 
         try{
             JCommander commander = new JCommander(INSTANCE, args);
@@ -258,7 +263,6 @@ public class MinecraftBot {
                     getLogger().info("Version: " + info.getVersionInfo().getVersionName() + ", " + info.getVersionInfo().getProtocolVersion());
                     getLogger().info("Player Count: " + info.getPlayerInfo().getOnlinePlayers() + " / " + info.getPlayerInfo().getMaxPlayers());
                     getLogger().info("Players: " + Arrays.toString(info.getPlayerInfo().getPlayers()));
-//                    getLogger().info("Description: " + parseTextMessage(info.getDescription().toJsonString().replace("\n", "").replace("\r", "")).replace("\n", "").replace("\r", ""));
                     getLogger().info("Icon: " + info.getIcon());
                 }else{
                     getLogger().info("Target server is online with " + info.getPlayerInfo().getOnlinePlayers() + " players.");
@@ -362,22 +366,18 @@ public class MinecraftBot {
                     e.printStackTrace();
                 }
             }
-
             @Override
             public void packetSent(PacketSentEvent event) {
                 PluginManager.getInstance().fireEvent(event);
             }
-
             @Override
             public void connected(ConnectedEvent event) {
                 PluginManager.getInstance().fireEvent(event);
             }
-
             @Override
             public void disconnecting(DisconnectingEvent event) {
                 PluginManager.getInstance().fireEvent(event);
             }
-
             @Override
             public void disconnected(DisconnectedEvent event) {
                 MinecraftBot.getInstance().onDisconnected(event);
@@ -445,18 +445,16 @@ public class MinecraftBot {
                 event.getCause().printStackTrace();
             }
         }
-        getLogger().info("Reconnecting in 10 seconds");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000*10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                getLogger().info("Reconnecting ..");
-                login();
+        final int waitTime = (int) vgetValue(FLAG_RECONNECT_TIME);
+        getLogger().info("Reconnecting in " + Util.msToTime(waitTime));
+        new Thread(() -> {
+            try {
+                Thread.sleep(waitTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            getLogger().info("Reconnecting ..");
+            login();
         }).start();
         PluginManager.getInstance().fireEvent(event);
     }

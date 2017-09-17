@@ -113,4 +113,16 @@ public class Util {
         }
     }
 
+    public static String msToTime(int ms) {
+        if (ms < 1000) return ms + "ms";
+        return sToTime(ms%1000, "hh, mm minutes and ss seconds");
+    }
+
+    public static String sToTime(int seconds, String format) {
+        long s = seconds % 60;
+        long m = (seconds / 60) % 60;
+        long h = (seconds / (60 * 60)) % 24;
+        return format.replace("hh", h+"").replace("mm", m+"").replace("ss", s+"");
+    }
+
 }
