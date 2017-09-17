@@ -70,11 +70,10 @@ public class Logger {
     }
 
     public void rawLog(PrintStream stream, String text){
-//        stream.println(text);
         if (colors)
             text = colorize(text);
         else
-            text = colorize("§r" + text);
+            text = colorize('\u00A7' + "r" + text);
 
         try {
             reader.print("\r");
