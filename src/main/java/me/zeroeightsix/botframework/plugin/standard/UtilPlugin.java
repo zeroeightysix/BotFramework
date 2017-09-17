@@ -70,13 +70,6 @@ public class UtilPlugin extends Plugin implements EventListener {
             }
         }).start();
 
-        registerInternalCommand(Command.createCommand("test", new ICommand() {
-            @Override
-            public void call(String[] args) {
-                getLogger().info(MinecraftBot.parseTextMessage("{\"extra\": [{ \"extra\": [{ \"color\": \"dark_aqua\", \"bold\": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false,\"text\":\"eenmom2001 \"}, {\"color\": \"dark_red\", \"bold \": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false, \"text\": \"pummeled \" }, { \"color\": \"dark_aqua\", \"bold\":false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false, \"text\": \"GayBot\" }, {\"color\": \"dark_red\", \"bold\": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\":false, \"text\": \" to death using \" }, { \"color\": \"gold\", \"bold\": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false, \"hoverEvent\": { \"action\": \"show_item\", \"value\": [{ \"text\": \"{id:\\\"minecraft:diamond_sword,Count:1b,tag:{ench:[{lvl:5s,id:16s},{lvl:2s,id:19s},{lv1:2s,id:20s},{lvl:3s,id:21s},{lvl:3s,id:22s},{lvl:3s,id:34s},{lvl:1s,id :70s}],RepairCost:31,display:{Name:\\\"Pokey Stick\\\"}},Damage:4s}\" }] }, \"text\": \"Pok-Stick\" }, { \"color\": \"gold\", \"bold\": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false, \"text\":\"\"}], \"text\": \"\" }], \"text\": \"\"}"));
-            }
-        }));
-
         registerInternalCommand(Command.createCommand("plugins", new ICommand() {
             @Override
             public void call(String[] args) {
