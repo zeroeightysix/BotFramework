@@ -1,5 +1,7 @@
 package me.zeroeightsix.botframework.plugin.command;
 
+import me.zeroeightsix.botframework.MinecraftBot;
+
 /**
  * Created by Gebruiker on 10/05/2017.
  */
@@ -19,7 +21,11 @@ public abstract class Command implements ICommand {
         return new Command(name) {
             @Override
             public void call(String[] args) {
-                run.call(args);
+                try {
+                    run.call(args);
+                }catch (Exception e){
+                    MinecraftBot.getLogger().logTrace(e);
+                }
             }
         };
     }

@@ -80,7 +80,6 @@ public class TextComponentTranslation extends TextComponentBase
      */
     protected void initializeFromFormat(String format)
     {
-        boolean flag = false;
         Matcher matcher = STRING_VARIABLE_PATTERN.matcher(format);
         int i = 0;
         int j = 0;

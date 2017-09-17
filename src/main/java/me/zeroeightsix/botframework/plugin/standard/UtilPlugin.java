@@ -4,15 +4,14 @@ import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.protocol.data.game.ClientRequest;
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntry;
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntryAction;
-import com.github.steveice10.mc.protocol.data.game.chunk.Chunk;
-import com.github.steveice10.mc.protocol.data.game.chunk.Column;
+import com.github.steveice10.mc.protocol.data.game.entity.player.Hand;
 import com.github.steveice10.mc.protocol.packet.ingame.client.ClientRequestPacket;
-import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerPositionRotationPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerPositionPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerSwingArmPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerPlayerListEntryPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerRespawnPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.player.ServerPlayerHealthPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.player.ServerPlayerPositionRotationPacket;
-import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerChunkDataPacket;
 import com.github.steveice10.packetlib.event.session.ConnectedEvent;
 import com.github.steveice10.packetlib.event.session.DisconnectedEvent;
 import com.github.steveice10.packetlib.event.session.PacketReceivedEvent;
@@ -21,20 +20,19 @@ import jline.internal.Preconditions;
 import me.zeroeightsix.botframework.Logger;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
+import me.zeroeightsix.botframework.event.BlockModifiedEvent;
 import me.zeroeightsix.botframework.event.PlayerLogEvent;
+import me.zeroeightsix.botframework.math.BlockPos;
 import me.zeroeightsix.botframework.plugin.EventHandler;
 import me.zeroeightsix.botframework.plugin.Plugin;
 import me.zeroeightsix.botframework.plugin.PluginManager;
 import me.zeroeightsix.botframework.plugin.command.ChatCommand;
 import me.zeroeightsix.botframework.plugin.command.Command;
 import me.zeroeightsix.botframework.plugin.command.ICommand;
-import me.zeroeightsix.botframework.math.BlockPos;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.Iterator;
-import java.util.Random;
 
 /**
  * Created by Gebruiker on 10/05/2017.
@@ -44,16 +42,19 @@ public class UtilPlugin extends Plugin implements EventListener {
     // location
     private static BlockPos playerPos = new BlockPos(0,0,0);
     private BlockPos reach = null;
-    private Random random = new Random();
 
     //commands
     private static ArrayList<GameProfile> players = new ArrayList<>();
     private boolean SHOULD_LOG_PLAYERUPDATES = false;
     PlayernameCompleter completer = new PlayernameCompleter();
 
+    public static final int FLAG_ANTIAFK = 0;
+
     public UtilPlugin() {
-        super("Util", "4", "AutoRespawn, inbuilt commands, player tracker and location handling.");
+        super("Util", "5", "AutoRespawn, inbuilt commands, player tracker and location handling.");
         getPluginManager().registerListener(this, this);
+
+        fsetEnabled(FLAG_ANTIAFK, false);
 
         new Thread(new Runnable() {
             @Override
@@ -68,6 +69,13 @@ public class UtilPlugin extends Plugin implements EventListener {
                 }
             }
         }).start();
+
+        registerInternalCommand(Command.createCommand("test", new ICommand() {
+            @Override
+            public void call(String[] args) {
+                getLogger().info(MinecraftBot.parseTextMessage("{\"extra\": [{ \"extra\": [{ \"color\": \"dark_aqua\", \"bold\": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false,\"text\":\"eenmom2001 \"}, {\"color\": \"dark_red\", \"bold \": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false, \"text\": \"pummeled \" }, { \"color\": \"dark_aqua\", \"bold\":false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false, \"text\": \"GayBot\" }, {\"color\": \"dark_red\", \"bold\": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\":false, \"text\": \" to death using \" }, { \"color\": \"gold\", \"bold\": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false, \"hoverEvent\": { \"action\": \"show_item\", \"value\": [{ \"text\": \"{id:\\\"minecraft:diamond_sword,Count:1b,tag:{ench:[{lvl:5s,id:16s},{lvl:2s,id:19s},{lv1:2s,id:20s},{lvl:3s,id:21s},{lvl:3s,id:22s},{lvl:3s,id:34s},{lvl:1s,id :70s}],RepairCost:31,display:{Name:\\\"Pokey Stick\\\"}},Damage:4s}\" }] }, \"text\": \"Pok-Stick\" }, { \"color\": \"gold\", \"bold\": false, \"italic\": false, \"underlined\": false, \"strikethrough\": false, \"obfuscated\": false, \"text\":\"\"}], \"text\": \"\" }], \"text\": \"\"}"));
+            }
+        }));
 
         registerInternalCommand(Command.createCommand("plugins", new ICommand() {
             @Override
@@ -191,7 +199,16 @@ public class UtilPlugin extends Plugin implements EventListener {
         if (playerPos.yCoord > reach.yCoord-1)
             playerPos.yCoord -= 1;
         playerPos.yCoord = Math.max(playerPos.yCoord, reach.yCoord-1);
-        getBot().getClient().getSession().send(new ClientPlayerPositionRotationPacket(true, playerPos.xCoord, playerPos.yCoord, playerPos.zCoord, random.nextInt(360), 0));
+        getBot().getClient().getSession().send(new ClientPlayerPositionPacket(true, playerPos.xCoord, playerPos.yCoord, playerPos.zCoord));
+
+        if (fisEnabled(FLAG_ANTIAFK))
+            getBot().getClient().getSession().send(new ClientPlayerSwingArmPacket(Hand.MAIN_HAND));
+    }
+
+    @EventHandler
+    public void onBlockModified(BlockModifiedEvent event) {
+        if (event.getLocation().getY() == reach.getY())
+            recalculateReach();
     }
 
     @EventHandler
@@ -218,41 +235,13 @@ public class UtilPlugin extends Plugin implements EventListener {
         }
 
         if (event.getPacket() instanceof ServerPlayerPositionRotationPacket){
-            ServerPlayerPositionRotationPacket packet = (ServerPlayerPositionRotationPacket) event.getPacket();
+            ServerPlayerPositionRotationPacket packet = event.getPacket();
             playerPos.xCoord = packet.getX();
             playerPos.yCoord = packet.getY();
             playerPos.zCoord = packet.getZ();
-            return;
-        }
 
-        if (event.getPacket() instanceof ServerChunkDataPacket){
-            ServerChunkDataPacket packet = event.getPacket();
-            Column column = packet.getColumn();
-            int sx = column.getX();
-            int sz = column.getZ();
-            Rectangle area = new Rectangle(sx*16, sz*16, 16, 16);
-            int hY = -1;
-            if (area.contains(playerPos.xCoord, playerPos.zCoord)) { // Player is inside this chunk
-                int cHc = 0;
-                for (Chunk c : column.getChunks()){
-                    for (int y = 0; y < 16; y++){
-                        int rY = 16*cHc+y;
-                        if (rY > playerPos.yCoord) continue;
-                        for (int z = 0; z < 16; z++){
-                            for (int x = 0; x < 16; x++){
-                                if (sx*16+x == (int) playerPos.xCoord && sz*16+z == (int) playerPos.zCoord){
-                                    int id = c.getBlocks().get(x, y, z).getId();
-                                    if (id == 0) continue;
-                                    hY = Math.max(hY, rY);
-                                }
-                            }
-                        }
-                    }
-                    cHc++;
-                }
-                if (hY != -1)
-                    reach = new BlockPos(playerPos.xCoord, hY, playerPos.zCoord);
-            }
+            recalculateReach();
+            return;
         }
 
         try{
@@ -289,6 +278,16 @@ public class UtilPlugin extends Plugin implements EventListener {
                 }
             }
         }catch (Exception e){}
+    }
+
+    private void recalculateReach() {
+        reach = playerPos.clone();
+        while (WorldHandler.getBlockAt((int)reach.xCoord, (int)reach.yCoord, (int)reach.zCoord).getId() == 0){
+            reach.yCoord --;
+            if (reach.yCoord <= 0)
+                return;
+        }
+        reach.yCoord--;
     }
 
     private GameProfile removeFromPlayers(GameProfile gameProfile){

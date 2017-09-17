@@ -5,6 +5,7 @@ import me.zeroeightsix.botframework.Logger;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
 import me.zeroeightsix.botframework.event.CommandEvent;
+import me.zeroeightsix.botframework.flag.AbstractFlaggable;
 import me.zeroeightsix.botframework.plugin.command.ChatCommand;
 import me.zeroeightsix.botframework.plugin.command.Command;
 import me.zeroeightsix.botframework.plugin.command.processing.CommandProcessor;
@@ -14,7 +15,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Plugin {
+public abstract class Plugin extends AbstractFlaggable {
 
     String name;
     String version;

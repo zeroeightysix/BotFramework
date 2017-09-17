@@ -24,4 +24,14 @@ public class AbstractFlaggable implements Flaggable {
     public boolean fanticondition(int FLAG, boolean extra) {
         return !fisEnabled(FLAG) && extra;
     }
+
+    @Override
+    public double vgetValue(int FLAG) {
+        return values.containsKey(FLAG) ? values.get(FLAG) : -1;
+    }
+
+    @Override
+    public void vsetValue(int FLAG, double value) {
+        values.put(FLAG, value);
+    }
 }

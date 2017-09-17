@@ -19,6 +19,8 @@ import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.*;
 import com.github.steveice10.packetlib.tcp.TcpSessionFactory;
 import jline.console.ConsoleReader;
+import me.zeroeightsix.botframework.cfg.json.JSONArray;
+import me.zeroeightsix.botframework.cfg.json.JSONObject;
 import me.zeroeightsix.botframework.event.ChatEvent;
 import me.zeroeightsix.botframework.locale.Locale;
 import me.zeroeightsix.botframework.locale.text.ITextComponent;
@@ -409,7 +411,7 @@ public class MinecraftBot {
 
     public void onPacketReceived(PacketReceivedEvent event){
         if (event.getPacket() instanceof ServerChatPacket) {
-            ITextComponent component = ITextComponent.Serializer.jsonToComponent(((ServerChatPacket) event.getPacket()).getMessage().toJsonString());
+            ITextComponent component = ITextComponent.Serializer.jsonToComponent(removeExcessiveChatJSON(((ServerChatPacket) event.getPacket()).getMessage().toJsonString()));
 
             getLogger().enableColours();
             getLogger().info("[Chat] " + component.getFormattedText());
@@ -439,8 +441,6 @@ public class MinecraftBot {
         if(event.getCause() != null) {
             if (event.getCause() instanceof ConnectException){
                 getLogger().info("Was unable to connect, retrying");
-                //System.exit(0);
-                //return;
             }else {
                 event.getCause().printStackTrace();
             }
@@ -459,6 +459,26 @@ public class MinecraftBot {
             }
         }).start();
         PluginManager.getInstance().fireEvent(event);
+    }
+
+    private static final JSONObject removeExcessiveChatJSON(JSONObject json) {
+        if (json.has("hoverEvent")) json.remove("hoverEvent");
+        if (json.has("clickEvent")) json.remove("clickEvent");
+        return json;
+    }
+
+    private static final String removeExcessiveChatJSON(String json) {
+        if (json.startsWith("[")) {
+            JSONArray array = new JSONArray(json);
+            for (int i = 0; i < array.length(); i++) {
+                array.put(i, removeExcessiveChatJSON(array.getJSONObject(i)));
+            }
+            return array.toString();
+        }else{
+            JSONObject object = new JSONObject(json);
+            if (object.has("extra")) return removeExcessiveChatJSON(object.getJSONArray("extra").toString());
+        }
+        return json;
     }
 
     public static final String parseTextMessage(String json) {
