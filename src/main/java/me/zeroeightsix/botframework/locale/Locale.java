@@ -48,7 +48,7 @@ public class Locale
     }
 
     public void loadLocale(String locale) throws IOException {
-        loadLocale(Locale.class.getResourceAsStream("/me/zeroeightsix/botframework/locale/" + locale + ".lang"));
+        loadLocale(getClass().getClassLoader().getResourceAsStream(locale + ".lang"));
     }
 
     public void loadLocale(InputStream inputStreamIn) throws IOException {
