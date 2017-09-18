@@ -16,13 +16,11 @@ public class Logger {
     PrintStream out;
 
     private String quickprefix = Ansi.ansi().a(Ansi.Attribute.RESET).toString();
-
     private String FORMAT;
-
     private static ConsoleReader reader;
-
     boolean colors = false;
     private final Map<TextFormatting, String> replacements = new EnumMap<>(TextFormatting.class);
+    public boolean DISABLED = false;
 
     static {
         try {
@@ -70,6 +68,7 @@ public class Logger {
     }
 
     public void rawLog(PrintStream stream, String text){
+        if (DISABLED) return;
         if (colors)
             text = colorize(text);
         else
@@ -163,5 +162,9 @@ public class Logger {
         }
 
         return result;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.DISABLED = disabled;
     }
 }

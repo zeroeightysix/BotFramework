@@ -84,12 +84,24 @@ public class MinecraftBot extends AbstractFlaggable {
 
     boolean logged_in = false;
 
+    // Flags
     public static final int FLAG_RECONNECT_TIME = 0;
+    public static final int FLAG_PRINT_LOCALE_INFO = 1;
+    public static final int FLAG_PRINT_BUILD_INFO = 2;
+    public static final int FLAG_PRINT_PLUGIN_INFO = 3;
+    public static final int FLAG_PRINT_SERVER_INFO = 4;
+    public static final int FLAG_PRINT_AUTH_INFO = 5;
 
     public static void main(String[] args) {
         INSTANCE = new MinecraftBot();
 
         INSTANCE.vsetValue(FLAG_RECONNECT_TIME, 10000); // 10 Seconds
+
+        INSTANCE.fsetEnabled(FLAG_PRINT_AUTH_INFO, true);
+        INSTANCE.fsetEnabled(FLAG_PRINT_BUILD_INFO, true);
+        INSTANCE.fsetEnabled(FLAG_PRINT_LOCALE_INFO, true);
+        INSTANCE.fsetEnabled(FLAG_PRINT_PLUGIN_INFO, true);
+        INSTANCE.fsetEnabled(FLAG_PRINT_SERVER_INFO, true);
 
         try{
             JCommander commander = new JCommander(INSTANCE, args);
@@ -132,8 +144,15 @@ public class MinecraftBot extends AbstractFlaggable {
     }
 
     public void startUp(){
+        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_PLUGIN_INFO));
+        getLogger().info("Loading plugins");
+        PluginManager.getInstance().reload();
+        getLogger().info(PluginManager.getInstance().getPlugins().size() + " plugins loaded");
+        getLogger().setDisabled(false);
+
         locale = new Locale();
 
+        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_LOCALE_INFO));
         try{
             locale.loadLocale(locale_name);
         }catch (Exception e) {
@@ -149,15 +168,15 @@ public class MinecraftBot extends AbstractFlaggable {
                 getLogger().severe("Continuing without locale.");
             }
         }
+        getLogger().setDisabled(false);
 
+        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_BUILD_INFO));
         getLogger().info("Minecraft BotFramework by 086, " + BOTFRAMEWORKVERSION);
-        getLogger().info("Loading plugins");
+        getLogger().setDisabled(false);
 
-        PluginManager.getInstance().reload();
-
-        getLogger().info(PluginManager.getInstance().getPlugins().size() + " plugins loaded");
-
+        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_SERVER_INFO));
         status();   // Server status
+        getLogger().setDisabled(false);
         login();    // Authentication
 
         new Thread(() -> {
@@ -195,34 +214,38 @@ public class MinecraftBot extends AbstractFlaggable {
         }).start();
     }
 
+    public void inputHostname() {
+        String host = null;
+        try {
+            host = getLogger().getReader().readLine("Hostname: ");
+        } catch (IOException e) {
+            System.exit(0);
+        }
+        if (host.equals("")) {
+            System.exit(0);
+        }
+        String port = null;
+        try {
+            port = getLogger().getReader().readLine("Port: ");
+        } catch (IOException e) {
+            System.exit(0);
+        }
+        if (port.equals(""))
+            System.exit(0);
+
+        try{
+            PORT = Integer.parseInt(port);
+        }catch (NumberFormatException e){
+            System.err.println("Port must be numerical");
+            return;
+        }
+        HOST = host;
+    }
+
     private void status() {
         if (HOST == null || PORT == Integer.MIN_VALUE){
             System.err.println("No hostname or port defined! (hostname -ip, port -port)");
-            String host = null;
-            try {
-                host = getLogger().getReader().readLine("Hostname: ");
-            } catch (IOException e) {
-                System.exit(0);
-            }
-            if (host.equals("")) {
-                System.exit(0);
-            }
-            String port = null;
-            try {
-                port = getLogger().getReader().readLine("Port: ");
-            } catch (IOException e) {
-                System.exit(0);
-            }
-            if (port.equals(""))
-                System.exit(0);
-
-            try{
-                PORT = Integer.parseInt(port);
-            }catch (NumberFormatException e){
-                System.err.println("Port must be numerical");
-                return;
-            }
-            HOST = host;
+            inputHostname();
         }
 
         Proxy proxy;
@@ -259,6 +282,7 @@ public class MinecraftBot extends AbstractFlaggable {
         client.getSession().setFlag(MinecraftConstants.SERVER_INFO_HANDLER_KEY, new ServerInfoHandler() {
             @Override
             public void handle(Session session, ServerStatusInfo info) {
+                getLogger().setDisabled(!fisEnabled(FLAG_PRINT_SERVER_INFO));
                 if (isDebug()){
                     getLogger().info("Version: " + info.getVersionInfo().getVersionName() + ", " + info.getVersionInfo().getProtocolVersion());
                     getLogger().info("Player Count: " + info.getPlayerInfo().getOnlinePlayers() + " / " + info.getPlayerInfo().getMaxPlayers());
@@ -274,6 +298,8 @@ public class MinecraftBot extends AbstractFlaggable {
                 getLogger().info("Description: " + lines[0]);
                 if (lines.length > 1) // this is bad i know
                     getLogger().info("             " + lines[1]);
+
+                getLogger().setDisabled(false);
             }
         });
 
@@ -299,6 +325,7 @@ public class MinecraftBot extends AbstractFlaggable {
     }
 
     private void login(boolean retry) {
+        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_AUTH_INFO));
         if (!logged_in || retry){
             logged_in = true;
             if(VERIFY_USERS || PASSWORD != null) {
@@ -395,6 +422,8 @@ public class MinecraftBot extends AbstractFlaggable {
             System.exit(0);
             return;
         }
+
+        getLogger().setDisabled(false);
     }
 
     private void onInternalCommand(String label, String[] args){

@@ -9,8 +9,10 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -113,16 +115,8 @@ public class Util {
         }
     }
 
-    public static String msToTime(int ms) {
-        if (ms < 1000) return ms + "ms";
-        return sToTime(ms%1000, "hh, mm minutes and ss seconds");
-    }
-
-    public static String sToTime(int seconds, String format) {
-        long s = seconds % 60;
-        long m = (seconds / 60) % 60;
-        long h = (seconds / (60 * 60)) % 24;
-        return format.replace("hh", h+"").replace("mm", m+"").replace("ss", s+"");
+    public static String msToTime(int millis) {
+        return (new SimpleDateFormat("mm:ss")).format(new Date(millis));
     }
 
 }

@@ -99,6 +99,17 @@ public class UtilPlugin extends Plugin implements EventListener {
             }
         }));
 
+        registerInternalCommand(Command.createCommand("changehost", new ICommand() {
+            @Override
+            public void call(String[] args) {
+                if (getBot().getClient().getSession().isConnected()){
+                    getBot().getClient().getSession().disconnect("Lost connection");
+                    return;
+                }
+                MinecraftBot.getInstance().inputHostname();
+            }
+        }));
+
         registerInternalCommand(Command.createCommand("help", new ICommand() {
             @Override
             public void call(String[] args) {
