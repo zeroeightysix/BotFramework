@@ -23,6 +23,7 @@ import me.zeroeightsix.botframework.cfg.json.JSONArray;
 import me.zeroeightsix.botframework.cfg.json.JSONObject;
 import me.zeroeightsix.botframework.event.ChatEvent;
 import me.zeroeightsix.botframework.flag.AbstractFlaggable;
+import me.zeroeightsix.botframework.flag.Flag;
 import me.zeroeightsix.botframework.locale.Locale;
 import me.zeroeightsix.botframework.locale.text.ITextComponent;
 import me.zeroeightsix.botframework.plugin.Plugin;
@@ -84,24 +85,24 @@ public class MinecraftBot extends AbstractFlaggable {
 
     boolean logged_in = false;
 
-    // Flags
-    public static final int FLAG_RECONNECT_TIME = 0;
-    public static final int FLAG_PRINT_LOCALE_INFO = 1;
-    public static final int FLAG_PRINT_BUILD_INFO = 2;
-    public static final int FLAG_PRINT_PLUGIN_INFO = 3;
-    public static final int FLAG_PRINT_SERVER_INFO = 4;
-    public static final int FLAG_PRINT_AUTH_INFO = 5;
+    // Flags (All ids = 0, real value is assigned later by initializeFlags();)
+    @Flag(state = true) public static int FLAG_RECONNECT_TIME = 0;
+    @Flag(state = true) public static int FLAG_PRINT_LOCALE_INFO = 0;
+    @Flag(state = true) public static int FLAG_PRINT_BUILD_INFO = 0;
+    @Flag(state = true) public static int FLAG_PRINT_PLUGIN_INFO = 0;
+    @Flag(state = true) public static int FLAG_PRINT_SERVER_INFO = 0;
+    @Flag(state = true) public static int FLAG_PRINT_AUTH_INFO = 0;
 
     public static void main(String[] args) {
         INSTANCE = new MinecraftBot();
+        try {
+            INSTANCE.initializeFlags();
+        } catch (IllegalAccessException e) {
+            getLogger().severe("Couldn't initiate flags! Fatal, quitting");
+            return;
+        }
 
         INSTANCE.vsetValue(FLAG_RECONNECT_TIME, 10000); // 10 Seconds
-
-        INSTANCE.fsetEnabled(FLAG_PRINT_AUTH_INFO, true);
-        INSTANCE.fsetEnabled(FLAG_PRINT_BUILD_INFO, true);
-        INSTANCE.fsetEnabled(FLAG_PRINT_LOCALE_INFO, true);
-        INSTANCE.fsetEnabled(FLAG_PRINT_PLUGIN_INFO, true);
-        INSTANCE.fsetEnabled(FLAG_PRINT_SERVER_INFO, true);
 
         try{
             JCommander commander = new JCommander(INSTANCE, args);
