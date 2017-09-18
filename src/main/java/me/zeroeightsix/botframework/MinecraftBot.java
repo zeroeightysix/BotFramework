@@ -24,6 +24,7 @@ import me.zeroeightsix.botframework.cfg.json.JSONObject;
 import me.zeroeightsix.botframework.event.ChatEvent;
 import me.zeroeightsix.botframework.flag.AbstractFlaggable;
 import me.zeroeightsix.botframework.flag.Flag;
+import me.zeroeightsix.botframework.flag.Value;
 import me.zeroeightsix.botframework.locale.Locale;
 import me.zeroeightsix.botframework.locale.text.ITextComponent;
 import me.zeroeightsix.botframework.plugin.Plugin;
@@ -86,7 +87,10 @@ public class MinecraftBot extends AbstractFlaggable {
     boolean logged_in = false;
 
     // Flags (All ids = 0, real value is assigned later by initializeFlags();)
-    @Flag(state = true) public static int FLAG_RECONNECT_TIME = 0;
+    @Value(value = 10000) public static int FLAG_RECONNECT_TIME = 0;    // Time to wait before reconnecting when disconnected
+    @Value(value = 60000) public static int FLAG_DOWN_TIME = 0;         // Time to wait before checking if the server is still down
+    @Value(value = 20) public static int FLAG_DOWN_RETRY = 0;           // Times to recheck before exiting when server appears down
+
     @Flag(state = true) public static int FLAG_PRINT_LOCALE_INFO = 0;
     @Flag(state = true) public static int FLAG_PRINT_BUILD_INFO = 0;
     @Flag(state = true) public static int FLAG_PRINT_PLUGIN_INFO = 0;
@@ -101,8 +105,6 @@ public class MinecraftBot extends AbstractFlaggable {
             getLogger().severe("Couldn't initiate flags! Fatal, quitting");
             return;
         }
-
-        INSTANCE.vsetValue(FLAG_RECONNECT_TIME, 10000); // 10 Seconds
 
         try{
             JCommander commander = new JCommander(INSTANCE, args);
@@ -243,6 +245,30 @@ public class MinecraftBot extends AbstractFlaggable {
         HOST = host;
     }
 
+    private boolean timeoutTest() {
+        // Test connection before getting status
+        if (!SKIP_TEST) {
+            int code = Util.hostAvailabilityCheck(HOST, PORT);
+
+            switch (code){
+                case 0:
+                    getLogger().info("Server is up & reachable");
+                    break;
+                case 1:
+                    getLogger().severe("Server isn't reachable!");
+//                    System.exit(0);
+                    return false;
+                default:
+                    getLogger().severe("Could not resolve hostname");
+//                    System.exit(0);
+                    return false;
+            }
+        }else{
+            getLogger().info("Skipping timeout test!");
+        }
+        return true;
+    }
+
     private void status() {
         if (HOST == null || PORT == Integer.MIN_VALUE){
             System.err.println("No hostname or port defined! (hostname -ip, port -port)");
@@ -256,25 +282,10 @@ public class MinecraftBot extends AbstractFlaggable {
             proxy = Proxy.NO_PROXY;
         }
 
-        // Test connection before getting status
-        if (!SKIP_TEST) {
-            int code = Util.hostAvailabilityCheck(HOST, PORT);
-
-            switch (code){
-                case 0:
-                    getLogger().info("Server is up & reachable");
-                    break;
-                case 1:
-                    getLogger().severe("Server isn't reachable!");
-                    System.exit(0);
-                    return;
-                default:
-                    getLogger().severe("Could not resolve hostname");
-                    System.exit(0);
-                    return;
-            }
-        }else{
-            getLogger().info("Skipping timeout test!");
+        boolean success = timeoutTest();
+        if (!success) {
+            System.exit(0);
+            return;
         }
 
         MinecraftProtocol protocol = new MinecraftProtocol(SubProtocol.STATUS);
@@ -483,6 +494,25 @@ public class MinecraftBot extends AbstractFlaggable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            int retry = 0;
+            while (!timeoutTest()) {
+                retry++;
+                int totalRetries = (int) vgetValue(FLAG_DOWN_RETRY);
+                if (retry >= totalRetries) {
+                    getLogger().severe("The target server is still down after " + totalRetries + " retries! Exiting.");
+                    System.exit(0);
+                }else{
+                    try {
+                        long wait = (long) vgetValue(FLAG_DOWN_TIME);
+                        getLogger().info("Waiting " + Util.msToTime((int) wait) + " before retrying connection. " + (totalRetries - retry) + " retries remaining.");
+                        Thread.sleep(wait);
+                    } catch (InterruptedException e) {
+                        getLogger().logTrace(e);
+                    }
+                }
+            }
+
             getLogger().info("Reconnecting ..");
             login();
         }).start();
