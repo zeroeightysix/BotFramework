@@ -4,7 +4,7 @@ import com.github.steveice10.packetlib.event.session.SessionEvent;
 import com.github.steveice10.packetlib.event.session.SessionListener;
 
 /**
- * Created by Gebruiker on 29/05/2017.
+ * Created by 086 on 29/05/2017.
  */
 public class ChatEvent implements SessionEvent {
 

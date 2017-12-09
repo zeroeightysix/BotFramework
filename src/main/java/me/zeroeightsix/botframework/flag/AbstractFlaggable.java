@@ -2,11 +2,15 @@ package me.zeroeightsix.botframework.flag;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 
 /**
  * Created by 086 on 15/09/2017.
  */
 public class AbstractFlaggable implements Flaggable {
+
+    protected HashMap<Integer, Boolean> flags = new HashMap<>();
+    protected HashMap<Integer, Double> values = new HashMap<>();
 
     @Override
     public void fsetEnabled(int FLAG, boolean enabled) {

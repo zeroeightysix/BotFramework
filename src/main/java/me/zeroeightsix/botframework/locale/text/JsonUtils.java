@@ -8,7 +8,7 @@ import java.io.Reader;
 import java.io.StringReader;
 
 /**
- * Created by Gebruiker on 17/05/2017.
+ * Created by 086 on 17/05/2017.
  */
 public class JsonUtils {
 

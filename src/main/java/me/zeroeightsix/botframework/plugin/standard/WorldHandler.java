@@ -10,6 +10,7 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUnload
 import com.github.steveice10.packetlib.event.session.PacketReceivedEvent;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.event.BlockModifiedEvent;
+import me.zeroeightsix.botframework.flag.Flag;
 import me.zeroeightsix.botframework.math.BlockPos;
 import me.zeroeightsix.botframework.plugin.EventHandler;
 import me.zeroeightsix.botframework.plugin.Plugin;
@@ -26,14 +27,18 @@ public class WorldHandler extends Plugin implements EventListener {
     private static ArrayList<Column> columns = new ArrayList<>();
     private static WorldHandler INSTANCE;
 
-    public static final int FLAG_LOG = 0;
+    @Flag(state = false)
+    public static int FLAG_LOG = 0;
 
     public WorldHandler() {
         super("worldhandler", "1");
+        try {
+            initializeFlags();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
         PluginManager.getInstance().registerListener(this, this);
         INSTANCE = this;
-
-        fsetEnabled(FLAG_LOG, false);
     }
 
     @EventHandler
@@ -81,6 +86,7 @@ public class WorldHandler extends Plugin implements EventListener {
 
     private void addColumn(Column column) {
         removeColumnAt(column.getX(), column.getZ());
+
         columns.add(column);
     }
 
@@ -92,12 +98,7 @@ public class WorldHandler extends Plugin implements EventListener {
 
     private Column getColumnAt(int x, int z) {
         ArrayList<Column> columns = (ArrayList<Column>) this.INSTANCE.columns.clone();
-        for (Column column : columns) {
-            if (column == null) continue;
-            if (column.getX() == x && column.getZ() == z)
-                return column;
-        }
-        return null;
+        return columns.stream().filter(column -> column!=null && column.getX() == x && column.getZ() == z).findFirst().orElse(null);
     }
 
     private Column getBlockColumn(int x, int z) {

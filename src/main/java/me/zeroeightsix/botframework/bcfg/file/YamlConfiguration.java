@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Created by Gebruiker on 3/06/2017.
+ * Created by 086 on 3/06/2017.
  */
 public class YamlConfiguration extends YamlBasicConfiguration {
 

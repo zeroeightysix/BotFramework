@@ -3,7 +3,7 @@ package me.zeroeightsix.botframework.plugin.command;
 import me.zeroeightsix.botframework.MinecraftBot;
 
 /**
- * Created by Gebruiker on 10/05/2017.
+ * Created by 086 on 10/05/2017.
  */
 public abstract class Command implements ICommand {
 

@@ -22,6 +22,7 @@ import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
 import me.zeroeightsix.botframework.event.BlockModifiedEvent;
 import me.zeroeightsix.botframework.event.PlayerLogEvent;
+import me.zeroeightsix.botframework.flag.Flag;
 import me.zeroeightsix.botframework.math.BlockPos;
 import me.zeroeightsix.botframework.plugin.EventHandler;
 import me.zeroeightsix.botframework.plugin.Plugin;
@@ -35,7 +36,7 @@ import java.util.EventListener;
 import java.util.Iterator;
 
 /**
- * Created by Gebruiker on 10/05/2017.
+ * Created by 086 on 10/05/2017.
  */
 public class UtilPlugin extends Plugin implements EventListener {
 
@@ -48,13 +49,11 @@ public class UtilPlugin extends Plugin implements EventListener {
     private boolean SHOULD_LOG_PLAYERUPDATES = false;
     PlayernameCompleter completer = new PlayernameCompleter();
 
-    public static final int FLAG_ANTIAFK = 0;
+    @Flag(state = false) public static int FLAG_ANTIAFK = 0;
 
     public UtilPlugin() {
         super("Util", "5", "AutoRespawn, inbuilt commands, player tracker and location handling.");
         getPluginManager().registerListener(this, this);
-
-        fsetEnabled(FLAG_ANTIAFK, false);
 
         new Thread(new Runnable() {
             @Override
@@ -285,13 +284,15 @@ public class UtilPlugin extends Plugin implements EventListener {
     }
 
     private void recalculateReach() {
-        reach = playerPos.clone();
-        while (WorldHandler.getBlockAt((int)reach.xCoord, (int)reach.yCoord, (int)reach.zCoord).getId() == 0){
-            reach.yCoord --;
-            if (reach.yCoord <= 0)
-                return;
-        }
-        reach.yCoord--;
+        try{
+            reach = playerPos.clone();
+            while (WorldHandler.getBlockAt((int)reach.xCoord, (int)reach.yCoord, (int)reach.zCoord).getId() == 0){
+                reach.yCoord --;
+                if (reach.yCoord <= 0)
+                    return;
+            }
+            reach.yCoord--;
+        }catch (Exception e){}
     }
 
     private GameProfile removeFromPlayers(GameProfile gameProfile){

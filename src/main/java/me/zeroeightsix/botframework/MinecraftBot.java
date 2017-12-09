@@ -48,17 +48,17 @@ public class MinecraftBot extends AbstractFlaggable {
     @Parameter(names = {"-proxy", "-p"}, description = "Proxy IP to connect through")
     private String PROXY_IP = null;
 
+    @Parameter(names = {"-proxyport", "-pp"}, description = "Proxy port to connect through")
+    private int PROXY_PORT = Integer.MIN_VALUE;
+
     @Parameter(names = "-debug", description = "Enables debug mode")
-    private boolean debug = false;
+    public static final boolean DEBUG = false;
 
     @Parameter(names = "-ip", description = "IP to connect to")
     private String HOST = null;
 
     @Parameter(names = "-port", description = "Port to connect to")
     private int PORT = 25565;
-
-    @Parameter(names = {"-proxyport", "-pp"}, description = "Proxy port to connect through")
-    private int PROXY_PORT = Integer.MIN_VALUE;
 
     @Parameter(names = "-verifyusers", description = "Disable cracked accounts")
     private boolean VERIFY_USERS = false;
@@ -97,11 +97,14 @@ public class MinecraftBot extends AbstractFlaggable {
     @Flag(state = true) public static int FLAG_PRINT_SERVER_INFO = 0;
     @Flag(state = true) public static int FLAG_PRINT_AUTH_INFO = 0;
 
+    @Flag public static int FLAG_PRINT_PACKETS_SENT = 0;
+
     public static void main(String[] args) {
         INSTANCE = new MinecraftBot();
         try {
             INSTANCE.initializeFlags();
         } catch (IllegalAccessException e) {
+            e.printStackTrace();
             getLogger().severe("Couldn't initiate flags! Fatal, quitting");
             return;
         }
@@ -407,6 +410,8 @@ public class MinecraftBot extends AbstractFlaggable {
             }
             @Override
             public void packetSent(PacketSentEvent event) {
+                if (fisEnabled(FLAG_PRINT_PACKETS_SENT))
+                    System.out.println("Sent packet:\t\t\t" + event.getPacket().toString());
                 PluginManager.getInstance().fireEvent(event);
             }
             @Override
@@ -540,7 +545,7 @@ public class MinecraftBot extends AbstractFlaggable {
     }
 
     public static final String parseTextMessage(String json) {
-        return ITextComponent.Serializer.jsonToComponent(json).getFormattedText();
+        return ITextComponent.Serializer.jsonToComponent(removeExcessiveChatJSON(json)).getFormattedText();
     }
 
     public static String format(String translateKey, Object... parameters)
@@ -569,7 +574,7 @@ public class MinecraftBot extends AbstractFlaggable {
     }
 
     public boolean isDebug() {
-        return debug;
+        return DEBUG;
     }
 
     public static GameProfile getProfile() {

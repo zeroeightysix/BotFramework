@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 
 /**
- * Created by Gebruiker on 9/05/2017.
+ * Created by 086 on 9/05/2017.
  */
 public class PluginLoader {
 

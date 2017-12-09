@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Gebruiker on 9/05/2017.
+ * Created by 086 on 9/05/2017.
  */
 public class PluginManager {
 
