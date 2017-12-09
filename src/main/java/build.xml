@@ -6,7 +6,7 @@
     <property name="src" location="../java"/>
 
     <target name="init">
-        <echo file="myAntOut.txt">My first ant ${src} ${line.separator}</echo>
+        <!--<echo file="myAntOut.txt">My first ant ${src} ${line.separator}</echo>-->
 
         <buildnumber/>
         <replaceregexp file="${src}/me/zeroeightsix/botframework/MinecraftBot.java"

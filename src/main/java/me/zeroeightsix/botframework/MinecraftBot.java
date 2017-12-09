@@ -138,14 +138,12 @@ public class MinecraftBot extends AbstractFlaggable {
 
         INSTANCE.startUp();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            public void run() {
-                getLogger().warn("Shutting down! Disabling plugins");
-                for (Plugin plugin : PluginManager.getInstance().getPlugins()){
-                    plugin.onDisable();
-                }
-                getLogger().info("Plugins disabled. Quitting.");
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            getLogger().warn("Shutting down! Disabling plugins");
+            for (Plugin plugin : PluginManager.getInstance().getPlugins()){
+                plugin.onDisable();
             }
+            getLogger().info("Plugins disabled. Quitting.");
         }, "Shutdown-thread"));
     }
 
