@@ -80,7 +80,6 @@ public class CommandProcessor implements Poofable {
     }
 
     public void processMessage(String message){
-
         ProcessChatPoof.ProcessChatPoofInfo chatPoofInfo = new ProcessChatPoof.ProcessChatPoofInfo(EraPoofInfo.Era.PRE);
         chatPoofInfo.setMessage(message);
         PoofHandler.callPoof(ProcessChatPoof.class, chatPoofInfo, this);
@@ -93,6 +92,7 @@ public class CommandProcessor implements Poofable {
 
         chatPoofInfo = new ProcessChatPoof.ProcessChatPoofInfo(EraPoofInfo.Era.POST);
         chatPoofInfo.setMessage(message);
+        chatPoofInfo.setSender(username);
         PoofHandler.callPoof(ProcessChatPoof.class, chatPoofInfo, this);
         if (chatPoofInfo.isCancelled()) return;
         message = chatPoofInfo.getMessage();
