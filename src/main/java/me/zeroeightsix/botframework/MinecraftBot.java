@@ -17,6 +17,7 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.ServerChatPacket;
 import com.github.steveice10.packetlib.Client;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.*;
+import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.tcp.TcpSessionFactory;
 import jline.console.ConsoleReader;
 import me.zeroeightsix.botframework.cfg.json.JSONArray;
@@ -52,7 +53,7 @@ public class MinecraftBot extends AbstractFlaggable {
     private int PROXY_PORT = Integer.MIN_VALUE;
 
     @Parameter(names = "-debug", description = "Enables debug mode")
-    public static final boolean DEBUG = false;
+    public static boolean DEBUG = false;
 
     @Parameter(names = "-ip", description = "IP to connect to")
     private String HOST = null;
@@ -80,7 +81,7 @@ public class MinecraftBot extends AbstractFlaggable {
     private static MinecraftBot INSTANCE;
     public static GameProfile SELF_PROFILE;
     private String SELF_TOKEN;
-    public static final String BUILD_NUMBER = "43";
+    public static final String BUILD_NUMBER = "52";
     private String BOTFRAMEWORKVERSION = "build " + BUILD_NUMBER;
     Locale locale;
 
@@ -97,7 +98,7 @@ public class MinecraftBot extends AbstractFlaggable {
     @Flag(state = true) public static int FLAG_PRINT_SERVER_INFO = 0;
     @Flag(state = true) public static int FLAG_PRINT_AUTH_INFO = 0;
 
-    @Flag public static int FLAG_PRINT_PACKETS_SENT = 0;
+    @Flag(state = false) public static int FLAG_PRINT_PACKETS_SENT = 0;
 
     public static void main(String[] args) {
         INSTANCE = new MinecraftBot();
@@ -479,6 +480,12 @@ public class MinecraftBot extends AbstractFlaggable {
                 System.exit(0);
                 return;
             }
+
+            if (reason.endsWith("Invalid login session.")) {
+                SELF_TOKEN = null;
+                getLogger().info("Couldn't connect because token was invalid; retrying with login details");
+                return;
+            }
         }
 
         getLogger().info("Disconnected with reason: " + reason);
@@ -520,6 +527,12 @@ public class MinecraftBot extends AbstractFlaggable {
             login();
         }).start();
         PluginManager.getInstance().fireEvent(event);
+    }
+
+    public static boolean sendPacket(Packet packet) {
+        if (!MinecraftBot.getInstance().getClient().getSession().isConnected()) return false;
+        MinecraftBot.getInstance().getClient().getSession().send(packet);
+        return true;
     }
 
     private static final JSONObject removeExcessiveChatJSON(JSONObject json) {

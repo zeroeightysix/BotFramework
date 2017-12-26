@@ -4,10 +4,12 @@ import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.protocol.data.game.ClientRequest;
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntry;
 import com.github.steveice10.mc.protocol.data.game.PlayerListEntryAction;
+import com.github.steveice10.mc.protocol.data.game.entity.player.CombatState;
 import com.github.steveice10.mc.protocol.data.game.entity.player.Hand;
 import com.github.steveice10.mc.protocol.packet.ingame.client.ClientRequestPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerPositionPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.client.player.ClientPlayerSwingArmPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.ServerCombatPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerPlayerListEntryPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerRespawnPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.player.ServerPlayerHealthPacket;
@@ -34,6 +36,7 @@ import me.zeroeightsix.botframework.plugin.command.ICommand;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 /**
  * Created by 086 on 10/05/2017.
@@ -46,7 +49,7 @@ public class UtilPlugin extends Plugin implements EventListener {
 
     //commands
     private static ArrayList<GameProfile> players = new ArrayList<>();
-    private boolean SHOULD_LOG_PLAYERUPDATES = false;
+    private boolean SHOULD_POST_PLAYERUPDATES = false;
     PlayernameCompleter completer = new PlayernameCompleter();
 
     @Flag(state = false) public static int FLAG_ANTIAFK = 0;
@@ -153,7 +156,7 @@ public class UtilPlugin extends Plugin implements EventListener {
             @Override
             public void call(String[] args) {
                 if (players.isEmpty()){
-                    getLogger().info("? There appears to be noone online.");
+                    getLogger().info("No one but you is online.");
                     return;
                 }
 
@@ -181,7 +184,7 @@ public class UtilPlugin extends Plugin implements EventListener {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                SHOULD_LOG_PLAYERUPDATES = true;
+                SHOULD_POST_PLAYERUPDATES = true;
             }
         }).start();
         Logger.getReader().addCompleter(completer);
@@ -190,7 +193,7 @@ public class UtilPlugin extends Plugin implements EventListener {
     @EventHandler
     public void onDisconnected(DisconnectedEvent event){
         players.clear();
-        SHOULD_LOG_PLAYERUPDATES = false;
+        SHOULD_POST_PLAYERUPDATES = false;
     }
 
     public static BlockPos getPlayerPos() {
@@ -204,7 +207,7 @@ public class UtilPlugin extends Plugin implements EventListener {
         playerPos.yCoord = Math.max(playerPos.yCoord, reach.yCoord-1);
         getBot().getClient().getSession().send(new ClientPlayerPositionPacket(true, playerPos.xCoord, playerPos.yCoord, playerPos.zCoord));
 
-        if (fisEnabled(FLAG_ANTIAFK))
+        if (fisEnabled(FLAG_ANTIAFK) && System.currentTimeMillis()%5000<1000)
             getBot().getClient().getSession().send(new ClientPlayerSwingArmPacket(Hand.MAIN_HAND));
     }
 
@@ -216,9 +219,8 @@ public class UtilPlugin extends Plugin implements EventListener {
 
     @EventHandler
     public void onPacketReceived(PacketReceivedEvent event){
-
         if (event.getPacket() instanceof ServerRespawnPacket){
-            SHOULD_LOG_PLAYERUPDATES = false;
+            SHOULD_POST_PLAYERUPDATES = false;
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -227,13 +229,18 @@ public class UtilPlugin extends Plugin implements EventListener {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    SHOULD_LOG_PLAYERUPDATES = true;
+                    SHOULD_POST_PLAYERUPDATES = true;
                 }
             }).start();
         }
 
+        // autorespawn
         if (event.getPacket() instanceof ServerPlayerHealthPacket){
             if (((ServerPlayerHealthPacket) event.getPacket()).getHealth() <= 0F)
+                event.getSession().send(new ClientRequestPacket(ClientRequest.RESPAWN));
+        }
+        if (event.getPacket() instanceof ServerCombatPacket) {
+            if (((ServerCombatPacket) event.getPacket()).getCombatState() == CombatState.ENTITY_DEAD)
                 event.getSession().send(new ClientRequestPacket(ClientRequest.RESPAWN));
         }
 
@@ -249,18 +256,16 @@ public class UtilPlugin extends Plugin implements EventListener {
 
         try{
             if (event.getPacket() instanceof ServerPlayerListEntryPacket){
-
                 PlayerListEntryAction action = ((ServerPlayerListEntryPacket) event.getPacket()).getAction();
                 PlayerListEntry[] entries = ((ServerPlayerListEntryPacket) event.getPacket()).getEntries();
 
-                if (entries.length > 5) return;
-                if (action == PlayerListEntryAction.UPDATE_LATENCY) return;
-
+                boolean post = true;
+                if (entries.length > 5) post = false;
                 if (action == PlayerListEntryAction.ADD_PLAYER){
                     for (PlayerListEntry entry : entries){
                         addPlayer(entry.getProfile());
                         if (entry.getProfile().getName().equals(MinecraftBot.SELF_PROFILE.getName())) continue;
-                        if (SHOULD_LOG_PLAYERUPDATES)
+                        if (SHOULD_POST_PLAYERUPDATES && post)
                             PluginManager.getInstance().fireEvent(new PlayerLogEvent(entry.getProfile(), PlayerLogEvent.Action.JOIN));
                     }
                 }
@@ -270,17 +275,19 @@ public class UtilPlugin extends Plugin implements EventListener {
                         if (s == null) continue; // get rid of this disgusting line later
                         if (s.getName().equals(MinecraftBot.SELF_PROFILE.getName())) continue;
 
-                        if (SHOULD_LOG_PLAYERUPDATES)
+                        if (SHOULD_POST_PLAYERUPDATES && post)
                             PluginManager.getInstance().fireEvent(new PlayerLogEvent(s, PlayerLogEvent.Action.LEAVE));
                     }
                 }
-                if (action == PlayerListEntryAction.UPDATE_DISPLAY_NAME){
+                if (action == PlayerListEntryAction.UPDATE_DISPLAY_NAME || action == PlayerListEntryAction.UPDATE_LATENCY || action == PlayerListEntryAction.UPDATE_GAMEMODE){
                     for (PlayerListEntry entry : entries){
                         addPlayer(entry.getProfile());
                     }
                 }
             }
-        }catch (Exception e){}
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void recalculateReach() {
@@ -307,11 +314,7 @@ public class UtilPlugin extends Plugin implements EventListener {
 
     private GameProfile addPlayer(GameProfile gameProfile){
         if (gameProfile == null || gameProfile.getName() == null) return gameProfile;
-        for (GameProfile gameProfile1 : players){
-            if (gameProfile.getId().equals(gameProfile1.getId())){
-                players.remove(gameProfile1);
-            }
-        }
+        players.removeAll(players.stream().filter(gameProfile1 -> gameProfile1.getId().equals(gameProfile.getId())).collect(Collectors.toList()));
         players.add(gameProfile);
         return gameProfile;
     }

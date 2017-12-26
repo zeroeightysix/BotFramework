@@ -106,6 +106,10 @@ public class PluginManager {
         }
     }
 
+    public static Plugin getPluginByName(String name) {
+        return getInstance().getPlugins().stream().filter(plugin -> plugin.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
+
     public static PluginManager getInstance() {
         return INSTANCE;
     }

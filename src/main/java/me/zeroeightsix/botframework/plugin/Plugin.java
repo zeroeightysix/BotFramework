@@ -122,9 +122,7 @@ public abstract class Plugin extends AbstractFlaggable {
                         }
                     }
 
-                    throw new RuntimeException("Unsupported constructor");
-//                    ChatCommand command = (ChatCommand) s.getConstructor().newInstance();
-//                    registerChatCommand(command);
+                    throw new RuntimeException("Unsupported constructor for class " + s.getClass().getSimpleName() + ". Please register it yourself.");
                 } catch (Exception e) {
                     getLogger().severe("Couldn't register chatcommand " + s.getSimpleName());
                     getLogger().logTrace(e);

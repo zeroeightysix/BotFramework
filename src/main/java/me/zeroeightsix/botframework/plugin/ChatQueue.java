@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 public class ChatQueue extends AbstractFlaggable {
     public static final int FLAG_LENGTHCHECK_FORMAT = 0;
+    private long lastMsgMS = System.currentTimeMillis();
 
     ArrayList<String> messages = new ArrayList<>();
     int wait = 100;
@@ -95,10 +96,15 @@ public class ChatQueue extends AbstractFlaggable {
             callback.onSent(s);
         messages.remove(0);
         MinecraftBot.getInstance().getClient().getSession().send(new ClientChatPacket(String.format(format, new Object[]{s})));
+        lastMsgMS = System.currentTimeMillis();
     }
 
     public interface QueueCallback {
         public void onSent(String message);
         public void onAdded(StringBuffer message);
+    }
+
+    public long getTimeLastMessage() {
+        return lastMsgMS;
     }
 }
