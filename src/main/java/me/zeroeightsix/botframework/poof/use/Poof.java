@@ -30,4 +30,7 @@ public abstract class Poof<T extends Poofable, S extends PoofInfo> implements IP
     public Class<S> getInfoClass() {
         return infoclass;
     }
+
+    @Override
+    public void execute(T poofed, S info) { }
 }

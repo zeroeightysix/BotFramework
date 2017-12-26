@@ -8,7 +8,6 @@ import me.zeroeightsix.botframework.poof.Poofable;
  */
 public abstract class ProcessChatPoof<T extends Poofable, S extends ProcessChatPoof.ProcessChatPoofInfo> extends Poof<T, S> {
 
-    public void execute(T poofed, S info) {}
     public static class ProcessChatPoofInfo extends EraPoofInfo {
         String message;
         String sender;

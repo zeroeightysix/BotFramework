@@ -1,6 +1,9 @@
 package me.zeroeightsix.botframework;
 
 import me.zeroeightsix.botframework.locale.text.TextFormatting;
+import me.zeroeightsix.botframework.poof.PoofHandler;
+import me.zeroeightsix.botframework.poof.Poofable;
+import me.zeroeightsix.botframework.poof.use.LogPoof;
 import org.fusesource.jansi.Ansi;
 import jline.console.ConsoleReader;
 
@@ -12,7 +15,7 @@ import java.util.Map;
 /**
  * Created by 086 on 9/05/2017.
  */
-public class Logger {
+public class Logger implements Poofable {
     PrintStream out;
 
     private String quickprefix = Ansi.ansi().a(Ansi.Attribute.RESET).toString();
@@ -74,9 +77,14 @@ public class Logger {
         else
             text = colorize('\u00A7' + "r" + text);
 
+        String fullMessage = quickprefix + text + "\n";
+        LogPoof.LogPoofInfo info = new LogPoof.LogPoofInfo(text, fullMessage);
+        PoofHandler.callPoof(LogPoof.class, info, this);
+        fullMessage = info.getFullMessage();
+
         try {
             reader.print("\r");
-            reader.print(quickprefix + text + "\n");
+            reader.print(fullMessage);
             reader.redrawLine();
             reader.flush();
         } catch (IOException e) {

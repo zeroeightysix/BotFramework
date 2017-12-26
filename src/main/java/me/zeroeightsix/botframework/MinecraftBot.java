@@ -31,6 +31,10 @@ import me.zeroeightsix.botframework.locale.text.ITextComponent;
 import me.zeroeightsix.botframework.plugin.Plugin;
 import me.zeroeightsix.botframework.plugin.PluginManager;
 import me.zeroeightsix.botframework.plugin.command.Command;
+import me.zeroeightsix.botframework.poof.EraPoofInfo;
+import me.zeroeightsix.botframework.poof.PoofHandler;
+import me.zeroeightsix.botframework.poof.Poofable;
+import me.zeroeightsix.botframework.poof.use.LoadLocalePoof;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -38,7 +42,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Arrays;
 
-public class MinecraftBot extends AbstractFlaggable {
+public class MinecraftBot extends AbstractFlaggable implements Poofable {
 
     @Parameter(names = {"-username", "-u"}, description = "Username or email for authentication", required = true)
     public String USERNAME = null;
@@ -158,6 +162,12 @@ public class MinecraftBot extends AbstractFlaggable {
         locale = new Locale();
 
         getLogger().setDisabled(!fisEnabled(FLAG_PRINT_LOCALE_INFO));
+
+        LoadLocalePoof.LocalePoofInfo info = new LoadLocalePoof.LocalePoofInfo(EraPoofInfo.Era.PRE, locale_name, locale);
+        PoofHandler.callPoof(LoadLocalePoof.class, info, this);
+        locale = info.getLocale();
+        locale_name = info.getLocaleName();
+
         try{
             locale.loadLocale(locale_name);
         }catch (Exception e) {
