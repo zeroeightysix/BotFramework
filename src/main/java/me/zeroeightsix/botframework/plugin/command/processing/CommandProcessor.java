@@ -95,7 +95,7 @@ public class CommandProcessor implements Poofable {
         if (chatPoofInfo.isCancelled()) return;
         message = chatPoofInfo.getMessage();
 
-        if (message.matches(REGEX_IGNORE_RULE)) return;
+        if (REGEX_IGNORE_RULE != null && message.matches(REGEX_IGNORE_RULE)) return;
 
         String previousMessage = message;
         String username = findUsername(REGEX_RULE, message, stripPrefixChar, stripSuffixChar);
