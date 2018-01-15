@@ -1,9 +1,11 @@
 package me.zeroeightsix.botframework.plugin.command.processing;
 
+import com.google.common.collect.Lists;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
 import me.zeroeightsix.botframework.event.CommandEvent;
 import me.zeroeightsix.botframework.plugin.Plugin;
+import me.zeroeightsix.botframework.plugin.command.Command;
 import me.zeroeightsix.botframework.poof.EraPoofInfo;
 import me.zeroeightsix.botframework.poof.PoofHandler;
 import me.zeroeightsix.botframework.poof.Poofable;
@@ -11,6 +13,7 @@ import me.zeroeightsix.botframework.poof.use.ProcessChatPoof;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +24,7 @@ public class CommandProcessor implements Poofable {
 
     private String COMMAND_PREFIX = "!";
     private String REGEX_RULE = "\\<(.*?)\\> ";
-    private String REGEX_IGNORE_RULE = null;
+    private List<String> REGEX_IGNORE_RULES = Lists.newArrayList();
     private String stripPrefixChar = "<";
     private String stripSuffixChar = ">";
 
@@ -40,32 +43,37 @@ public class CommandProcessor implements Poofable {
         this.parent = parent;
     }
 
-    public void setCommandPrefix(String commandPrefix) {
+    public CommandProcessor setCommandPrefix(String commandPrefix) {
         this.COMMAND_PREFIX = commandPrefix;
+        return this;
     }
 
-    public void setRegexRule(String regexRule) {
+    public CommandProcessor setRegexRule(String regexRule) {
         this.REGEX_RULE = regexRule;
+        return this;
     }
 
-    public void setStripPrefixChar(String stripPrefixChar) {
+    public CommandProcessor setStripPrefixChar(String stripPrefixChar) {
         this.stripPrefixChar = stripPrefixChar.replace(" ", "");
+        return this;
     }
 
-    public void setStripSuffixChar(String stripSuffixChar) {
+    public CommandProcessor setStripSuffixChar(String stripSuffixChar) {
         this.stripSuffixChar = stripSuffixChar.replace(" ", "");
+        return this;
     }
 
     public String getCommandPrefix() {
         return COMMAND_PREFIX;
     }
 
-    public void setRegexIgnoreRule(String regex) {
-        this.REGEX_IGNORE_RULE = regex;
+    public CommandProcessor ignoreRegex(String regex) {
+        this.REGEX_IGNORE_RULES.add(regex);
+        return this;
     }
 
-    public String getRegexIgnoreRule() {
-        return REGEX_IGNORE_RULE;
+    public List<String> getRegexIgnoreRules() {
+        return REGEX_IGNORE_RULES;
     }
 
     public String getRegexRule() {
@@ -76,12 +84,14 @@ public class CommandProcessor implements Poofable {
         return stripPrefixChar;
     }
 
-    public void setAdminCondition(IsAdminCondition adminCondition) {
+    public CommandProcessor setAdminCondition(IsAdminCondition adminCondition) {
         this.adminCondition = adminCondition;
+        return this;
     }
 
-    public void setDeniedMessageCondition(DeniedMessageCondition deniedMessageCondition) {
+    public CommandProcessor setDeniedMessageCondition(DeniedMessageCondition deniedMessageCondition) {
         this.deniedMessageCondition = deniedMessageCondition;
+        return this;
     }
 
     public String getStripSuffixChar() {
@@ -95,7 +105,8 @@ public class CommandProcessor implements Poofable {
         if (chatPoofInfo.isCancelled()) return;
         message = chatPoofInfo.getMessage();
 
-        if (REGEX_IGNORE_RULE != null && message.matches(REGEX_IGNORE_RULE)) return;
+        final String toCheck = message;
+        if (REGEX_IGNORE_RULES.stream().anyMatch(toCheck::matches)) return;
 
         String previousMessage = message;
         String username = findUsername(REGEX_RULE, message, stripPrefixChar, stripSuffixChar);
