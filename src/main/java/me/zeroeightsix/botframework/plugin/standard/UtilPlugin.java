@@ -302,7 +302,7 @@ public class UtilPlugin extends Plugin implements EventListener {
         }catch (Exception e){}
     }
 
-    private GameProfile removeFromPlayers(GameProfile gameProfile){
+    private synchronized GameProfile removeFromPlayers(GameProfile gameProfile){
         for (GameProfile gameProfile1 : players){
             if (gameProfile.getId().equals(gameProfile1.getId())){
                 players.remove(gameProfile1);
@@ -312,7 +312,7 @@ public class UtilPlugin extends Plugin implements EventListener {
         return null;
     }
 
-    private GameProfile addPlayer(GameProfile gameProfile){
+    private synchronized GameProfile addPlayer(GameProfile gameProfile){
         if (gameProfile == null || gameProfile.getName() == null) return gameProfile;
         players.removeAll(players.stream().filter(gameProfile1 -> gameProfile1.getId().equals(gameProfile.getId())).collect(Collectors.toList()));
         players.add(gameProfile);
@@ -321,6 +321,10 @@ public class UtilPlugin extends Plugin implements EventListener {
 
     public static ArrayList<GameProfile> getOnlinePlayers() {
         return players;
+    }
+
+    public static boolean isPlayerOnline(String username) {
+        return getOnlinePlayers().stream().anyMatch(gameProfile -> gameProfile.getName().equalsIgnoreCase(username));
     }
 
     private class PlayernameCompleter implements Completer {

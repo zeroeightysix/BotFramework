@@ -85,7 +85,7 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
     private static MinecraftBot INSTANCE;
     public static GameProfile SELF_PROFILE;
     private String SELF_TOKEN;
-    public static final String BUILD_NUMBER = "52";
+    public static final String BUILD_NUMBER = "53";
     private String BOTFRAMEWORKVERSION = "build " + BUILD_NUMBER;
     Locale locale;
 
@@ -494,7 +494,7 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
             if (reason.endsWith("Invalid login session.")) {
                 SELF_TOKEN = null;
                 getLogger().info("Couldn't connect because token was invalid; retrying with login details");
-                return;
+                login();
             }
         }
 

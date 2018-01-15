@@ -5,6 +5,7 @@ import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.plugin.standard.UtilPlugin;
 import me.zeroeightsix.botframework.plugin.standard.WorldHandler;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -97,6 +98,9 @@ public class PluginManager {
 
                     try {
                         methods[i].invoke(registered, event);
+                    } catch (InvocationTargetException exception) {
+                        System.err.println("Got InvocationTargetException:");
+                        exception.getCause().printStackTrace();
                     } catch (Exception exception) {
                         exception.printStackTrace();
                     }

@@ -6,7 +6,7 @@
 
     <groupId>groupId</groupId>
     <artifactId>BotFramework</artifactId>
-    <version>43-SNAPSHOT</version>
+    <version>rel</version>
     <packaging>jar</packaging>
 
     <properties>
