@@ -14,6 +14,8 @@ import me.zeroeightsix.botframework.poof.use.ProcessChatPoof;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,14 +32,9 @@ public class CommandProcessor implements Poofable {
 
     Plugin parent;
 
-    IsAdminCondition adminCondition = new IsAdminCondition() {
-        @Override
-        public Boolean commit(String input) {
-            return super.commit(input);
-        }
-    };
+    Predicate<String> adminCondition = str -> false;
 
-    DeniedMessageCondition deniedMessageCondition = new DeniedMessageCondition();
+    UnaryOperator<String> deniedMessage = input -> "You are not allowed to execute this command, " + input;
 
     public CommandProcessor(Plugin parent) {
         this.parent = parent;
@@ -84,13 +81,13 @@ public class CommandProcessor implements Poofable {
         return stripPrefixChar;
     }
 
-    public CommandProcessor setAdminCondition(IsAdminCondition adminCondition) {
-        this.adminCondition = adminCondition;
+    public CommandProcessor setAdminCondition(Predicate<String> condition) {
+        this.adminCondition = condition;
         return this;
     }
 
-    public CommandProcessor setDeniedMessageCondition(DeniedMessageCondition deniedMessageCondition) {
-        this.deniedMessageCondition = deniedMessageCondition;
+    public CommandProcessor setDeniedMessageCondition(UnaryOperator<String> messageOperator) {
+        this.deniedMessage = messageOperator;
         return this;
     }
 
@@ -136,7 +133,7 @@ public class CommandProcessor implements Poofable {
                 args = w.toArray(new String[0]);
 
                 try{
-                    parent.callCommand(new CommandEvent(username, command, args), adminCondition.commit(username), deniedMessageCondition.commit(username));
+                    parent.callCommand(new CommandEvent(username, command, args), adminCondition.test(username), deniedMessage.apply(username));
                 }catch (Exception e) {
                     MinecraftBot.getLogger().severe("Exception parsing command for " + parent.getName() + " (text: " + message + ")");
                     MinecraftBot.getLogger().logTrace(e);
