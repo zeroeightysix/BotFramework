@@ -58,23 +58,19 @@ public class PluginManager {
     }
 
     public void unregisterListener(EventListener listener){
-        if (listeners.containsKey(listener))
-            listeners.remove(listener);
+        listeners.remove(listener);
     }
 
     public void fireEvent(final SessionEvent event) {
-        new Thread() {
-            @Override
-            public void run() {
-                if (event == null) return;
-                try{
-                    call(event);
-                }catch (Exception e){
-                    MinecraftBot.getInstance().getLogger().severe("Exception firing event " + event.getClass().getName());
-                    e.printStackTrace();
-                }
+        new Thread(() -> {
+            if (event == null) return;
+            try{
+                call(event);
+            }catch (Exception e){
+                MinecraftBot.getInstance().getLogger().severe("Exception firing event " + event.getClass().getName());
+                e.printStackTrace();
             }
-        }.start();
+        }).start();
     }
 
     private void call(final SessionEvent event) {
@@ -84,8 +80,7 @@ public class PluginManager {
             Method[] methods = registered.getClass().getMethods();
 
             for (int i = 0; i < methods.length; i++) {
-                EventHandler eventHandler = methods[i].getAnnotation(EventHandler.class);
-                if (eventHandler != null) {
+                if (methods[i].isAnnotationPresent(EventHandler.class)) {
                     Class<?>[] methodParams = methods[i].getParameterTypes();
 
                     if (methodParams.length < 1) {
@@ -99,7 +94,7 @@ public class PluginManager {
                     try {
                         methods[i].invoke(registered, event);
                     } catch (InvocationTargetException exception) {
-                        System.err.println("Got InvocationTargetException:");
+                        System.err.println("InvocationTargetException:");
                         exception.getCause().printStackTrace();
                     } catch (Exception exception) {
                         exception.printStackTrace();
@@ -111,7 +106,10 @@ public class PluginManager {
     }
 
     public static Plugin getPluginByName(String name) {
-        return getInstance().getPlugins().stream().filter(plugin -> plugin.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+        return getInstance().getPlugins().stream()
+                            .filter(plugin -> plugin.getName().equalsIgnoreCase(name))
+                            .findFirst()
+                            .orElse(null);
     }
 
     public static PluginManager getInstance() {

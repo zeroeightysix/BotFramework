@@ -14,6 +14,8 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public abstract class Plugin extends AbstractFlaggable {
 
@@ -101,34 +103,57 @@ public abstract class Plugin extends AbstractFlaggable {
     public void registerChatCommand(ChatCommand command){
         registerChatCommands.add(command);
     }
+
+
+    @SuppressWarnings("unchecked")
     protected void registerChatCommands(String packagename) {
         List<Class> classList = Util.generateClassList(packagename);
-        for (Class s : classList) {
-            classif:
-            if (ChatCommand.class.isAssignableFrom(s)){
-                try {
-                    for (Constructor constructor : s.getConstructors()) {
-                        Class[] types = constructor.getParameterTypes();
-                        if (types.length == 0) { // Empty constructor!
-                            ChatCommand command = (ChatCommand) constructor.newInstance();
-                            registerChatCommand(command);
-                            break classif;
-                        }else if(types.length == 1) {
-                            if (Plugin.class.isAssignableFrom(types[0])) { // Constructor taking in only a plugin (parent plugin)
-                                ChatCommand command = (ChatCommand) constructor.newInstance(this);
-                                registerChatCommand(command);
-                                break classif;
-                            }
-                        }
-                    }
+        classList.stream()
+                 .filter(this::isClassValid)
+                 .map(clazz -> (Class<? extends ChatCommand>)clazz)
+                 .forEach(this::registerClass);
+    }
 
-                    throw new RuntimeException("Unsupported constructor for class " + s.getClass().getSimpleName() + ". Please register it yourself.");
-                } catch (Exception e) {
-                    getLogger().severe("Couldn't register chatcommand " + s.getSimpleName());
-                    getLogger().logTrace(e);
-                }
+    private void registerClass(Class<? extends ChatCommand> clazz) {
+        try {
+            Constructor c = clazz.getDeclaredConstructors()[0];
+            Class[] params = c.getParameterTypes();
+            if (params.length == 0) {
+                ChatCommand command = (ChatCommand) c.newInstance();
+                registerChatCommand(command);
             }
+            else  {
+                ChatCommand command = (ChatCommand) c.newInstance(this);
+                registerChatCommand(command);
+            }
+
+        } catch (Exception e) {
+            getLogger().severe("Failed to register chatcommand " + clazz.getSimpleName());
+            getLogger().logTrace(e);
         }
+    }
+
+    private boolean isClassValid(Class<?> clazz) {
+        try {
+            Objects.requireNonNull(clazz);
+            if (!clazz.isAnnotationPresent(RegisterCommand.class))
+                return false;
+                //throw new Exception("missing @RegisterCommand annotation");
+            if (!ChatCommand.class.isAssignableFrom(clazz))
+                throw new Exception("does not extend ChatCommand class");
+            if (!isValidConstructor(clazz.getDeclaredConstructors()[0]))
+                throw new Exception("invalid constructor");
+
+            return true;
+        } catch (Exception e) {
+            getLogger().warn(String.format("Invalid class \"%s\": %s", clazz.getName(), e.getMessage()));
+            return false;
+        }
+    }
+    private boolean isValidConstructor(Constructor c) {
+        int count = c.getParameterCount();
+        return count == 0 ||
+                (Plugin.class.isAssignableFrom(c.getParameterTypes()[0]) && count == 1);
     }
 
     public ArrayList<Command> getInternalCommands() {
