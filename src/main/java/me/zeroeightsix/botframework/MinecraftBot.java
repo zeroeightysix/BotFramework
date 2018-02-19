@@ -102,8 +102,6 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
     @Flag(state = true) public static int FLAG_PRINT_SERVER_INFO = 0;
     @Flag(state = true) public static int FLAG_PRINT_AUTH_INFO = 0;
 
-    @Flag(state = false) public static int FLAG_PRINT_PACKETS_SENT = 0;
-
     public static void main(String[] args) {
         INSTANCE = new MinecraftBot();
         try {
@@ -419,8 +417,6 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
             }
             @Override
             public void packetSent(PacketSentEvent event) {
-                if (fisEnabled(FLAG_PRINT_PACKETS_SENT))
-                    System.out.println("Sent packet:\t\t\t" + event.getPacket().toString());
                 PluginManager.getInstance().fireEvent(event);
             }
             @Override
@@ -493,6 +489,7 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
 
             if (reason.endsWith("Invalid login session.")) {
                 SELF_TOKEN = null;
+                logged_in = false;
                 getLogger().info("Couldn't connect because token was invalid; retrying with login details");
                 login();
             }
