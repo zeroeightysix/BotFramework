@@ -103,7 +103,7 @@ public class CommandProcessor implements Poofable {
         message = chatPoofInfo.getMessage();
 
         final String toCheck = message;
-        if (REGEX_IGNORE_RULES.stream().anyMatch(p -> p.matcher(toCheck).find())) return;
+        if (REGEX_IGNORE_RULES.stream().anyMatch(p -> p.matcher(toCheck).matches())) return;
 
         String previousMessage = message;
         String username = findUsername(REGEX_RULE, message, stripPrefixChar, stripSuffixChar);
