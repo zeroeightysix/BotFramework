@@ -1,0 +1,39 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'me.zeroeightsix.botframework'
+version = '54'
+
+description = "Advanced minecraft bot framework wrapping around mcprotocollib"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.6'
+    compile group: 'org.apache.commons', name: 'commons-text', version:'1.1'
+    compile group: 'com.google.guava', name: 'guava', version:'22.0'
+    compile group: 'org.fusesource.jansi', name: 'jansi', version:'1.16'
+    compile group: 'com.beust', name: 'jcommander', version:'1.69'
+    compile group: 'org.yaml', name: 'snakeyaml', version:'1.18'
+    compile group: 'jline', name: 'jline', version:'2.14.5'
+    compile 'com.github.Steveice10:MCProtocolLib:1.12.2-2'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': 'me.zeroeightsix.botframework.MinecraftBot'
+        )
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
