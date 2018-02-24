@@ -5,28 +5,29 @@ import me.zeroeightsix.botframework.Logger;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
 import me.zeroeightsix.botframework.event.CommandEvent;
-import me.zeroeightsix.botframework.flag.AbstractFlaggable;
 import me.zeroeightsix.botframework.plugin.command.ChatCommand;
 import me.zeroeightsix.botframework.plugin.command.Command;
 import me.zeroeightsix.botframework.plugin.command.processing.CommandProcessor;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
-public abstract class Plugin extends AbstractFlaggable {
+public abstract class Plugin {
 
-    String name;
-    String version;
-    String description;
+    private String name;
+    private String version;
+    private String description;
 
-    ChatQueue queue = new ChatQueue();
-    CommandProcessor processor = new CommandProcessor(this);
+    private ChatQueue queue = new ChatQueue();
+    private CommandProcessor processor = new CommandProcessor(this);
 
-    ArrayList<Command> registeredInternalCommands = new ArrayList<>();
-    ArrayList<ChatCommand> registeredChatCommands = new ArrayList<>();
+    private ArrayList<Command> registeredInternalCommands = new ArrayList<>();
+    private ArrayList<ChatCommand> registeredChatCommands = new ArrayList<>();
 
-    File dataFolder;
+    private File dataFolder;
 
     public Plugin(String name) {
         this(name, "1.0");
@@ -42,16 +43,11 @@ public abstract class Plugin extends AbstractFlaggable {
         this.description = description;
         this.dataFolder = new File("Plugins/" + name);
         if (!dataFolder.exists() || !dataFolder.isDirectory()){
-            dataFolder.mkdir();
+            if (!dataFolder.mkdir()) {
+                getLogger().warn("Unable to create plugin data folder: Might cause issues!");
+            }
         }
         queue.start();
-
-        try {
-            initializeFlags();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to initialize flag(s) of plugin " + name + "!");
-        }
     }
 
     public void sendChatMessage(String message){
@@ -97,13 +93,12 @@ public abstract class Plugin extends AbstractFlaggable {
     public void onEnable(){}
     public void onDisable(){}
 
-    public void registerInternalCommand(Command command){
+    protected void registerInternalCommand(Command command){
         registeredInternalCommands.add(command);
     }
-    public void registerChatCommand(ChatCommand command){
+    protected void registerChatCommand(ChatCommand command){
         registeredChatCommands.add(command);
     }
-
 
     @SuppressWarnings("unchecked")
     protected void registerChatCommands(String packagename) {
