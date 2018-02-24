@@ -19,9 +19,10 @@ import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.session.*;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.tcp.TcpSessionFactory;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import jline.console.ConsoleReader;
-import me.zeroeightsix.botframework.cfg.json.JSONArray;
-import me.zeroeightsix.botframework.cfg.json.JSONObject;
 import me.zeroeightsix.botframework.event.ChatEvent;
 import me.zeroeightsix.botframework.locale.Locale;
 import me.zeroeightsix.botframework.locale.text.ITextComponent;
@@ -523,22 +524,23 @@ public class MinecraftBot implements Poofable {
         return true;
     }
 
-    private static final JSONObject removeExcessiveChatJSON(JSONObject json) {
+    private static final JsonObject removeExcessiveChatJSON(JsonObject json) {
         if (json.has("hoverEvent")) json.remove("hoverEvent");
         if (json.has("clickEvent")) json.remove("clickEvent");
         return json;
     }
 
     private static final String removeExcessiveChatJSON(String json) {
+        JsonParser parser = new JsonParser();
         if (json.startsWith("[")) {
-            JSONArray array = new JSONArray(json);
-            for (int i = 0; i < array.length(); i++) {
-                array.put(i, removeExcessiveChatJSON(array.getJSONObject(i)));
+            JsonArray array = parser.parse(json).getAsJsonArray();
+            for (int i = 0; i < array.size(); i++) {
+                array.set(i, removeExcessiveChatJSON(array.get(i).getAsJsonObject()));
             }
             return array.toString();
         }else{
-            JSONObject object = new JSONObject(json);
-            if (object.has("extra")) return removeExcessiveChatJSON(object.getJSONArray("extra").toString());
+            JsonObject object = parser.parse(json).getAsJsonObject();
+            if (object.has("extra")) return removeExcessiveChatJSON(object.getAsJsonArray("extra").toString());
         }
         return json;
     }
