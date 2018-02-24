@@ -2,6 +2,9 @@
 Advanced minecraft bot framework for in-chat commands, features & more, the only limit is your creativity!
 Entirely made in java.
 
+## Building
+The framework is built using gradle. Simply clone the project and use `gradlew build` to build it.
+
 ## For users
 Botframework functions a lot like a bukkit server. It'll generate a plugins folder, load any plugins (bots) from there and connect to a server.
 All you have to do is put the desired plugins in the plugins folder, fire up botframework and you're ready to go.
