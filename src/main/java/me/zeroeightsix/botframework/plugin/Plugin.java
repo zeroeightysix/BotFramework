@@ -4,6 +4,7 @@ import com.github.steveice10.mc.protocol.packet.ingame.client.ClientChatPacket;
 import me.zeroeightsix.botframework.Logger;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
+import me.zeroeightsix.botframework.configuration.Configuration;
 import me.zeroeightsix.botframework.event.CommandEvent;
 import me.zeroeightsix.botframework.plugin.command.ChatCommand;
 import me.zeroeightsix.botframework.plugin.command.Command;
@@ -28,6 +29,7 @@ public abstract class Plugin {
     private ArrayList<ChatCommand> registeredChatCommands = new ArrayList<>();
 
     private File dataFolder;
+    private Configuration configuration;
 
     public Plugin(String name) {
         this(name, "1.0");
@@ -43,9 +45,10 @@ public abstract class Plugin {
         this.description = description;
         this.dataFolder = new File("Plugins/" + name);
         if (!dataFolder.exists() || !dataFolder.isDirectory()){
-            if (!dataFolder.mkdir()) {
-                getLogger().warn("Unable to create plugin data folder: Might cause issues!");
-            }
+            if (!dataFolder.mkdir())
+                getLogger().warn("Unable to create plugin data folder: Will cause issues!");
+            else
+                configuration = new Configuration(new File(dataFolder, String.format("%s.cfg", name)));
         }
         queue.start();
     }
@@ -151,6 +154,7 @@ public abstract class Plugin {
                 (Plugin.class.isAssignableFrom(c.getParameterTypes()[0]) && count == 1);
     }
 
+    public Configuration getConfiguration() { return configuration; }
     public ArrayList<Command> getInternalCommands() {
         return registeredInternalCommands;
     }
@@ -181,8 +185,8 @@ public abstract class Plugin {
     public File getDataFolder() {
         return dataFolder;
     }
-
     public CommandProcessor getCommandProcessor() {
         return processor;
     }
+
 }
