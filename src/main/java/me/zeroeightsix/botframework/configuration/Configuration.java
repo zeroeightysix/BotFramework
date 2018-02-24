@@ -168,6 +168,53 @@ public class Configuration {
     }
 
     /**
+     * Set the new default for specified path
+     * @param path
+     * @param value
+     */
+    public void setDefault(String path, JsonElement value) {
+        defaultMap.put(path, value);
+    }
+
+    /**
+     * Set the new default for specified path as number
+     * @param path
+     * @param number
+     */
+    public void setDefaultNumber(String path, Number number) {
+        setDefault(path, createPrimitive(number));
+    }
+
+    /**
+     * Set the new default for specified path as character
+     * @param path
+     * @param character
+     */
+    public void setDefaultCharacter(String path, Character character) {
+        setDefault(path, createPrimitive(character));
+    }
+
+    /**
+     * Set the new default for specified path as boolean
+     * @param path
+     * @param bool
+     */
+    public void setDefaultBoolean(String path, Boolean bool) {
+        setDefault(path, createPrimitive(bool));
+    }
+
+    /**
+     * Set the new default for specified path as string
+     * @param path
+     * @param string
+     */
+    public void setDefaultString(String path, String string) {
+        setDefault(path, createPrimitive(string));
+    }
+
+
+
+    /**
      * Get a value from the configuration as a JsonElement. If not present, returns from the defaults.
      * @param path
      * @return
