@@ -24,7 +24,6 @@ import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
 import me.zeroeightsix.botframework.event.BlockModifiedEvent;
 import me.zeroeightsix.botframework.event.PlayerLogEvent;
-import me.zeroeightsix.botframework.flag.Flag;
 import me.zeroeightsix.botframework.math.BlockPos;
 import me.zeroeightsix.botframework.plugin.EventHandler;
 import me.zeroeightsix.botframework.plugin.Plugin;
@@ -52,7 +51,7 @@ public class UtilPlugin extends Plugin implements EventListener {
     private boolean SHOULD_POST_PLAYERUPDATES = false;
     PlayernameCompleter completer = new PlayernameCompleter();
 
-    @Flag(state = false) public static int FLAG_ANTIAFK = 0;
+    public static boolean FLAG_ANTIAFK = false;
 
     public UtilPlugin() {
         super("Util", "5", "AutoRespawn, inbuilt commands, player tracker and location handling.");
@@ -207,7 +206,7 @@ public class UtilPlugin extends Plugin implements EventListener {
         playerPos.yCoord = Math.max(playerPos.yCoord, reach.yCoord-1);
         getBot().getClient().getSession().send(new ClientPlayerPositionPacket(true, playerPos.xCoord, playerPos.yCoord, playerPos.zCoord));
 
-        if (fisEnabled(FLAG_ANTIAFK) && System.currentTimeMillis()%5000<1000)
+        if (FLAG_ANTIAFK && System.currentTimeMillis()%5000<1000)
             getBot().getClient().getSession().send(new ClientPlayerSwingArmPacket(Hand.MAIN_HAND));
     }
 

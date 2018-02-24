@@ -5,7 +5,6 @@ import me.zeroeightsix.botframework.Logger;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
 import me.zeroeightsix.botframework.event.CommandEvent;
-import me.zeroeightsix.botframework.flag.AbstractFlaggable;
 import me.zeroeightsix.botframework.plugin.command.ChatCommand;
 import me.zeroeightsix.botframework.plugin.command.Command;
 import me.zeroeightsix.botframework.plugin.command.processing.CommandProcessor;
@@ -15,9 +14,8 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
-public abstract class Plugin extends AbstractFlaggable {
+public abstract class Plugin {
 
     String name;
     String version;
@@ -48,13 +46,6 @@ public abstract class Plugin extends AbstractFlaggable {
             dataFolder.mkdir();
         }
         queue.start();
-
-        try {
-            initializeFlags();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to initialize flag(s) of plugin " + name + "!");
-        }
     }
 
     public void sendChatMessage(String message){

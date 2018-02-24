@@ -10,7 +10,6 @@ import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUnload
 import com.github.steveice10.packetlib.event.session.PacketReceivedEvent;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.event.BlockModifiedEvent;
-import me.zeroeightsix.botframework.flag.Flag;
 import me.zeroeightsix.botframework.math.BlockPos;
 import me.zeroeightsix.botframework.plugin.EventHandler;
 import me.zeroeightsix.botframework.plugin.Plugin;
@@ -27,16 +26,10 @@ public class WorldHandler extends Plugin implements EventListener {
     private static ArrayList<Column> columns = new ArrayList<>();
     private static WorldHandler INSTANCE;
 
-    @Flag(state = false)
-    public static int FLAG_LOG = 0;
+    public static boolean FLAG_LOG = false;
 
     public WorldHandler() {
         super("worldhandler", "1");
-        try {
-            initializeFlags();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
         PluginManager.getInstance().registerListener(this, this);
         INSTANCE = this;
     }
@@ -47,12 +40,12 @@ public class WorldHandler extends Plugin implements EventListener {
             ServerChunkDataPacket chunkDataPacket = event.getPacket();
             Column column = chunkDataPacket.getColumn();
             addColumn(column);
-            if (fisEnabled(FLAG_LOG))
+            if (FLAG_LOG)
                 MinecraftBot.getLogger().info("[WorldHandler] Added chunk: " + column.getX() + ", " + column.getZ());
         }else if (event.getPacket() instanceof ServerUnloadChunkPacket) {
             ServerUnloadChunkPacket unloadChunkPacket = event.getPacket();
             removeColumnAt(unloadChunkPacket.getX(), unloadChunkPacket.getZ());
-            if (fisEnabled(FLAG_LOG))
+            if (FLAG_LOG)
                 MinecraftBot.getLogger().info("[WorldHandler] Removed chunk: " + unloadChunkPacket.getX() + ", " + unloadChunkPacket.getZ());
         }else if (event.getPacket() instanceof ServerBlockChangePacket) {
             ServerBlockChangePacket blockChangePacket = event.getPacket();
@@ -78,7 +71,7 @@ public class WorldHandler extends Plugin implements EventListener {
                 else        z = 16 - Math.abs(z)%16;
                 if (chunk != null)
                     chunk.getBlocks().set(x, y, z, newState);
-                if (fisEnabled(FLAG_LOG))
+                if (FLAG_LOG)
                     MinecraftBot.getLogger().info("[WorldHandler] Modified block: " + position.getX() + ", " + position.getY() + ", "+ position.getZ());
             }catch (Exception e){}
         }

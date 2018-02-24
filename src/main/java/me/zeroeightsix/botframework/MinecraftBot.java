@@ -23,9 +23,6 @@ import jline.console.ConsoleReader;
 import me.zeroeightsix.botframework.cfg.json.JSONArray;
 import me.zeroeightsix.botframework.cfg.json.JSONObject;
 import me.zeroeightsix.botframework.event.ChatEvent;
-import me.zeroeightsix.botframework.flag.AbstractFlaggable;
-import me.zeroeightsix.botframework.flag.Flag;
-import me.zeroeightsix.botframework.flag.Value;
 import me.zeroeightsix.botframework.locale.Locale;
 import me.zeroeightsix.botframework.locale.text.ITextComponent;
 import me.zeroeightsix.botframework.plugin.Plugin;
@@ -42,7 +39,9 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Arrays;
 
-public class MinecraftBot extends AbstractFlaggable implements Poofable {
+import static me.zeroeightsix.botframework.Constants.*;
+
+public class MinecraftBot implements Poofable {
 
     @Parameter(names = {"-username", "-u"}, description = "Username or email for authentication", required = true)
     public String USERNAME = null;
@@ -85,32 +84,14 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
     private static MinecraftBot INSTANCE;
     public static GameProfile SELF_PROFILE;
     private String SELF_TOKEN;
-    public static final String BUILD_NUMBER = "53";
+    public static final String BUILD_NUMBER = "54";
     private String BOTFRAMEWORKVERSION = "build " + BUILD_NUMBER;
     Locale locale;
 
     boolean logged_in = false;
 
-    // Flags (All ids = 0, real value is assigned later by initializeFlags();)
-    @Value(value = 10000) public static int FLAG_RECONNECT_TIME = 0;    // Time to wait before reconnecting when disconnected
-    @Value(value = 60000) public static int FLAG_DOWN_TIME = 0;         // Time to wait before checking if the server is still down
-    @Value(value = 20) public static int FLAG_DOWN_RETRY = 0;           // Times to recheck before exiting when server appears down
-
-    @Flag(state = true) public static int FLAG_PRINT_LOCALE_INFO = 0;
-    @Flag(state = true) public static int FLAG_PRINT_BUILD_INFO = 0;
-    @Flag(state = true) public static int FLAG_PRINT_PLUGIN_INFO = 0;
-    @Flag(state = true) public static int FLAG_PRINT_SERVER_INFO = 0;
-    @Flag(state = true) public static int FLAG_PRINT_AUTH_INFO = 0;
-
     public static void main(String[] args) {
         INSTANCE = new MinecraftBot();
-        try {
-            INSTANCE.initializeFlags();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            getLogger().severe("Couldn't initiate flags! Fatal, quitting");
-            return;
-        }
 
         try{
             JCommander commander = new JCommander(INSTANCE, args);
@@ -151,7 +132,7 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
     }
 
     public void startUp(){
-        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_PLUGIN_INFO));
+        getLogger().setDisabled(!FLAG_PRINT_PLUGIN_INFO);
         getLogger().info("Loading plugins");
         PluginManager.getInstance().reload();
         getLogger().info(PluginManager.getInstance().getPlugins().size() + " plugins loaded");
@@ -159,7 +140,7 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
 
         locale = new Locale();
 
-        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_LOCALE_INFO));
+        getLogger().setDisabled(!FLAG_PRINT_LOCALE_INFO);
 
         LoadLocalePoof.LocalePoofInfo info = new LoadLocalePoof.LocalePoofInfo(EraPoofInfo.Era.PRE, locale_name, locale);
         PoofHandler.callPoof(LoadLocalePoof.class, info, this);
@@ -183,11 +164,11 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
         }
         getLogger().setDisabled(false);
 
-        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_BUILD_INFO));
+        getLogger().setDisabled(!FLAG_PRINT_BUILD_INFO);
         getLogger().info("Minecraft BotFramework by 086, " + BOTFRAMEWORKVERSION);
         getLogger().setDisabled(false);
 
-        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_SERVER_INFO));
+        getLogger().setDisabled(!FLAG_PRINT_SERVER_INFO);
         status();   // Server status
         getLogger().setDisabled(false);
         login();    // Authentication
@@ -304,7 +285,7 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
         client.getSession().setFlag(MinecraftConstants.SERVER_INFO_HANDLER_KEY, new ServerInfoHandler() {
             @Override
             public void handle(Session session, ServerStatusInfo info) {
-                getLogger().setDisabled(!fisEnabled(FLAG_PRINT_SERVER_INFO));
+                getLogger().setDisabled(!FLAG_PRINT_SERVER_INFO);
                 if (isDebug()){
                     getLogger().info("Version: " + info.getVersionInfo().getVersionName() + ", " + info.getVersionInfo().getProtocolVersion());
                     getLogger().info("Player Count: " + info.getPlayerInfo().getOnlinePlayers() + " / " + info.getPlayerInfo().getMaxPlayers());
@@ -347,7 +328,7 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
     }
 
     private void login(boolean retry) {
-        getLogger().setDisabled(!fisEnabled(FLAG_PRINT_AUTH_INFO));
+        getLogger().setDisabled(!FLAG_PRINT_AUTH_INFO);
         if (!logged_in || retry){
             logged_in = true;
             if(VERIFY_USERS || PASSWORD != null) {
@@ -503,7 +484,7 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
                 event.getCause().printStackTrace();
             }
         }
-        final int waitTime = (int) vgetValue(FLAG_RECONNECT_TIME);
+        final int waitTime = FLAG_RECONNECT_TIME;
         getLogger().info("Reconnecting in " + Util.msToTime(waitTime));
         new Thread(() -> {
             try {
@@ -515,13 +496,13 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
             int retry = 0;
             while (!timeoutTest()) {
                 retry++;
-                int totalRetries = (int) vgetValue(FLAG_DOWN_RETRY);
+                int totalRetries = FLAG_DOWN_RETRY;
                 if (retry >= totalRetries) {
                     getLogger().severe("The target server is still down after " + totalRetries + " retries! Exiting.");
                     System.exit(0);
                 }else{
                     try {
-                        long wait = (long) vgetValue(FLAG_DOWN_TIME);
+                        long wait = FLAG_DOWN_TIME;
                         getLogger().info("Waiting " + Util.msToTime((int) wait) + " before retrying connection. " + (totalRetries - retry) + " retries remaining.");
                         Thread.sleep(wait);
                     } catch (InterruptedException e) {
@@ -575,7 +556,7 @@ public class MinecraftBot extends AbstractFlaggable implements Poofable {
         return INSTANCE;
     }
 
-    public String getIP() {
+    public String getHost() {
         return HOST;
     }
 

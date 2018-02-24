@@ -2,12 +2,11 @@ package me.zeroeightsix.botframework.plugin;
 
 import com.github.steveice10.mc.protocol.packet.ingame.client.ClientChatPacket;
 import me.zeroeightsix.botframework.MinecraftBot;
-import me.zeroeightsix.botframework.flag.AbstractFlaggable;
 
 import java.util.ArrayList;
 
-public class ChatQueue extends AbstractFlaggable {
-    public static final int FLAG_LENGTHCHECK_FORMAT = 0;
+public class ChatQueue {
+    public boolean FLAG_LENGTHCHECK_FORMAT = true;
     private long lastMsgMS = System.currentTimeMillis();
 
     ArrayList<String> messages = new ArrayList<>();
@@ -20,8 +19,6 @@ public class ChatQueue extends AbstractFlaggable {
     Thread chatThread;
 
     public ChatQueue() {
-        fsetEnabled(FLAG_LENGTHCHECK_FORMAT, true);
-
         chatThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -72,7 +69,7 @@ public class ChatQueue extends AbstractFlaggable {
     }
 
     public void addMessage(String message){
-        String formatted = fisEnabled(FLAG_LENGTHCHECK_FORMAT) ? String.format(format, message) : message;
+        String formatted = FLAG_LENGTHCHECK_FORMAT ? String.format(format, message) : message;
         if (maxlength != -1 && formatted.length() > maxlength) {
             int dif = formatted.length()-message.length();
             String s = message.substring(maxlength-dif);
