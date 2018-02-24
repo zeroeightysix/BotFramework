@@ -26,7 +26,7 @@ public class CommandProcessor implements Poofable {
 
     private String COMMAND_PREFIX = "!";
     private String REGEX_RULE = "\\<(.*?)\\> ";
-    private List<String> REGEX_IGNORE_RULES = Lists.newArrayList();
+    private List<Pattern> REGEX_IGNORE_RULES = Lists.newArrayList();
     private String stripPrefixChar = "<";
     private String stripSuffixChar = ">";
 
@@ -65,11 +65,11 @@ public class CommandProcessor implements Poofable {
     }
 
     public CommandProcessor ignoreRegex(String regex) {
-        this.REGEX_IGNORE_RULES.add(regex);
+        this.REGEX_IGNORE_RULES.add(Pattern.compile(regex));
         return this;
     }
 
-    public List<String> getRegexIgnoreRules() {
+    public List<Pattern> getRegexIgnoreRules() {
         return REGEX_IGNORE_RULES;
     }
 
@@ -103,7 +103,7 @@ public class CommandProcessor implements Poofable {
         message = chatPoofInfo.getMessage();
 
         final String toCheck = message;
-        if (REGEX_IGNORE_RULES.stream().anyMatch(toCheck::matches)) return;
+        if (REGEX_IGNORE_RULES.stream().anyMatch(p -> p.matcher(toCheck).matches())) return;
 
         String previousMessage = message;
         String username = findUsername(REGEX_RULE, message, stripPrefixChar, stripSuffixChar);

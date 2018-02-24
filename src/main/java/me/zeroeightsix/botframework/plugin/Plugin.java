@@ -5,17 +5,16 @@ import me.zeroeightsix.botframework.Logger;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
 import me.zeroeightsix.botframework.event.CommandEvent;
+import me.zeroeightsix.botframework.flag.AbstractFlaggable;
 import me.zeroeightsix.botframework.plugin.command.ChatCommand;
 import me.zeroeightsix.botframework.plugin.command.Command;
 import me.zeroeightsix.botframework.plugin.command.processing.CommandProcessor;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
-public abstract class Plugin {
+public abstract class Plugin extends AbstractFlaggable {
 
     String name;
     String version;
@@ -25,7 +24,7 @@ public abstract class Plugin {
     CommandProcessor processor = new CommandProcessor(this);
 
     ArrayList<Command> registeredInternalCommands = new ArrayList<>();
-    ArrayList<ChatCommand> registerChatCommands = new ArrayList<>();
+    ArrayList<ChatCommand> registeredChatCommands = new ArrayList<>();
 
     File dataFolder;
 
@@ -46,12 +45,19 @@ public abstract class Plugin {
             dataFolder.mkdir();
         }
         queue.start();
+
+        try {
+            initializeFlags();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to initialize flag(s) of plugin " + name + "!");
+        }
     }
 
     public void sendChatMessage(String message){
 
         if (message.length() > 256){
-            String s = message.substring(0,256);
+            String s = message.substring(0, 256);
             sendChatMessage(s);
             sendChatMessage(message.substring(256));
             return;
@@ -73,14 +79,17 @@ public abstract class Plugin {
     }
 
     public void callCommand(CommandEvent event, boolean isAdmin, String deniedMessage){
-        for (ChatCommand c : registerChatCommands){
+        for (ChatCommand c : registeredChatCommands){
             if (c.getLabel().equalsIgnoreCase(event.getLabel())){
                 if (c.isAdminCommand() && !isAdmin) {
                     if (deniedMessage != null)
                         sendChatMessage(String.format(deniedMessage, event.getUsername()));
                     continue;
                 }
-                c.call(event.getUsername(), event.getArguments());
+                if (c.getPermissions().size() == 0 ||
+                        c.getPermissions().stream().anyMatch(perm -> perm.test(event.getUsername()))) {
+                    c.call(event.getUsername(), event.getArguments());
+                }
             }
         }
     }
@@ -92,7 +101,7 @@ public abstract class Plugin {
         registeredInternalCommands.add(command);
     }
     public void registerChatCommand(ChatCommand command){
-        registerChatCommands.add(command);
+        registeredChatCommands.add(command);
     }
 
 
@@ -151,7 +160,7 @@ public abstract class Plugin {
         return registeredInternalCommands;
     }
     public ArrayList<ChatCommand> getChatCommands() {
-        return registerChatCommands;
+        return registeredChatCommands;
     }
     protected PluginManager getPluginManager(){
         return PluginManager.getInstance();

@@ -1,8 +1,14 @@
 package me.zeroeightsix.botframework.plugin.command;
 
 import com.github.steveice10.mc.protocol.packet.ingame.client.ClientChatPacket;
+import com.google.common.collect.Lists;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.plugin.Plugin;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
 
 public abstract class ChatCommand implements IChatCommand {
 
@@ -11,6 +17,7 @@ public abstract class ChatCommand implements IChatCommand {
     protected Plugin parent = null;
 
     boolean admin;
+    List<Predicate<String>> permissions = Lists.newArrayList(); // permissions that admin might not me a appropriate for
 
     protected void setAdmin(boolean admin) {
         this.admin = admin;
@@ -18,6 +25,14 @@ public abstract class ChatCommand implements IChatCommand {
 
     public boolean isAdminCommand() {
         return admin;
+    }
+
+    protected void addPermission(Predicate<String> condition) {
+        permissions.add(condition);
+    }
+
+    public Collection<Predicate<String>> getPermissions() {
+        return Collections.unmodifiableCollection(permissions);
     }
 
     public ChatCommand(String label) {
