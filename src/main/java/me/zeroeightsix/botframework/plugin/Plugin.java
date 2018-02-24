@@ -4,7 +4,6 @@ import com.github.steveice10.mc.protocol.packet.ingame.client.ClientChatPacket;
 import me.zeroeightsix.botframework.Logger;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.Util;
-import me.zeroeightsix.botframework.configuration.Configuration;
 import me.zeroeightsix.botframework.event.CommandEvent;
 import me.zeroeightsix.botframework.plugin.command.ChatCommand;
 import me.zeroeightsix.botframework.plugin.command.Command;

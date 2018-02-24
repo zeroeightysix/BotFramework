@@ -1,4 +1,4 @@
-package me.zeroeightsix.botframework.configuration;
+package me.zeroeightsix.botframework.plugin;
 
 import com.google.gson.*;
 
