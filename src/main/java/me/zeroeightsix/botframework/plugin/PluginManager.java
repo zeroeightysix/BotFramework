@@ -3,7 +3,6 @@ package me.zeroeightsix.botframework.plugin;
 import com.github.steveice10.packetlib.event.session.SessionEvent;
 import me.zeroeightsix.botframework.MinecraftBot;
 import me.zeroeightsix.botframework.plugin.standard.UtilPlugin;
-import me.zeroeightsix.botframework.plugin.standard.WorldHandler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,7 +32,7 @@ public class PluginManager {
         plugins.clear();
 
         PluginManager.getInstance().addPlugin(new UtilPlugin());
-        PluginManager.getInstance().addPlugin(new WorldHandler());
+//        PluginManager.getInstance().addPlugin(new WorldHandler());
 
         PluginLoader pluginLoader = new PluginLoader();
         pluginLoader.loadPlugins();

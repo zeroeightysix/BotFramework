@@ -21,6 +21,7 @@ import java.util.EventListener;
 /**
  * Created by 086 on 16/09/2017.
  */
+@Deprecated
 public class WorldHandler extends Plugin implements EventListener {
 
     private static ArrayList<Column> columns = new ArrayList<>();

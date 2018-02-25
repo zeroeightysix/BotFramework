@@ -22,7 +22,7 @@ dependencies {
     compile group: 'com.beust', name: 'jcommander', version:'1.69'
     compile group: 'org.yaml', name: 'snakeyaml', version:'1.18'
     compile group: 'jline', name: 'jline', version:'2.14.5'
-    compile 'com.github.Steveice10:MCProtocolLib:1.12.2-2'
+    compile 'com.github.Steveice10:MCProtocolLib:1.12.2-1'
 }
 
 jar {
