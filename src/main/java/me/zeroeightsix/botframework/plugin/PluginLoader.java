@@ -8,7 +8,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.ServiceLoader;
 
 /**
@@ -71,17 +70,7 @@ public class PluginLoader {
 
     private Plugin[] loadExternalPlugins() {
         ArrayList<Plugin> PluginList = new ArrayList<>();
-
-        Iterator<Plugin> it = ServiceLoader.load(Plugin.class).iterator();
-
-        while (it.hasNext()) {
-            try {
-                PluginList.add(it.next());
-            } catch (Exception x) {
-                x.printStackTrace();
-            }
-        }
-
+        ServiceLoader.load(Plugin.class).forEach(PluginList::add);
         return PluginList.toArray(new Plugin[PluginList.size()]);
     }
 

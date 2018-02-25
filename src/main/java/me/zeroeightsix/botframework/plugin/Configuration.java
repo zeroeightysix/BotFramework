@@ -160,6 +160,7 @@ public class Configuration {
 
     /**
      * Gets a value from the defaults
+     * Returns null if not present
      * @param path
      * @return
      */

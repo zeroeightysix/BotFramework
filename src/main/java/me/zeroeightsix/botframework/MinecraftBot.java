@@ -9,7 +9,6 @@ import com.github.steveice10.mc.auth.exception.request.RequestException;
 import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.mc.protocol.data.SubProtocol;
-import com.github.steveice10.mc.protocol.data.status.ServerStatusInfo;
 import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoHandler;
 import com.github.steveice10.mc.protocol.data.status.handler.ServerPingTimeHandler;
 import com.github.steveice10.mc.protocol.packet.ingame.client.ClientChatPacket;
@@ -24,6 +23,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import jline.console.ConsoleReader;
 import me.zeroeightsix.botframework.event.ChatEvent;
+import me.zeroeightsix.botframework.event.StatusPacketReceivedEvent;
+import me.zeroeightsix.botframework.event.StatusPacketSentEvent;
+import me.zeroeightsix.botframework.forge.ForgeHandshakeHandler;
+import me.zeroeightsix.botframework.forge.ForgeMinecraftProtocol;
 import me.zeroeightsix.botframework.locale.Locale;
 import me.zeroeightsix.botframework.locale.text.ITextComponent;
 import me.zeroeightsix.botframework.plugin.Plugin;
@@ -46,33 +49,26 @@ public class MinecraftBot implements Poofable {
 
     @Parameter(names = {"-username", "-u"}, description = "Username or email for authentication", required = true)
     public String USERNAME = null;
-
     @Parameter(names = {"-password", "-pw"}, description = "Password for authentication")
     public String PASSWORD = null;
-
     @Parameter(names = {"-proxy", "-p"}, description = "Proxy IP to connect through")
     private String PROXY_IP = null;
-
     @Parameter(names = {"-proxyport", "-pp"}, description = "Proxy port to connect through")
     private int PROXY_PORT = Integer.MIN_VALUE;
-
     @Parameter(names = "-debug", description = "Enables debug mode")
     public static boolean DEBUG = false;
-
     @Parameter(names = "-ip", description = "IP to connect to")
     private String HOST = null;
-
     @Parameter(names = "-port", description = "Port to connect to")
     private int PORT = 25565;
-
     @Parameter(names = "-verifyusers", description = "Disable cracked accounts")
     private boolean VERIFY_USERS = false;
-
     @Parameter(names = "-skiptest", description = "Skip the connection timeout test")
     private boolean SKIP_TEST = false;
-
     @Parameter(names = "-locale", description = "The locale to load botframework in")
     private String locale_name = "en_us";
+    @Parameter(names = {"-forge", "-f"}, description = "Specifies that this connection is modded using FML")
+    private boolean isForge = false;
 
     @Parameter(names = {"-h", "--help"},
         help = true,
@@ -169,6 +165,11 @@ public class MinecraftBot implements Poofable {
         getLogger().info("Minecraft BotFramework by 086, " + BOTFRAMEWORKVERSION);
         getLogger().setDisabled(false);
 
+        if (isForge) {
+            PluginManager.getInstance().registerListener(new ForgeHandshakeHandler(), null);
+            getLogger().info("Simulating modded forge client.");
+        }
+
         getLogger().setDisabled(!FLAG_PRINT_SERVER_INFO);
         status();   // Server status
         getLogger().setDisabled(false);
@@ -248,11 +249,9 @@ public class MinecraftBot implements Poofable {
                     break;
                 case 1:
                     getLogger().severe("Server isn't reachable!");
-//                    System.exit(0);
                     return false;
                 default:
                     getLogger().severe("Could not resolve hostname");
-//                    System.exit(0);
                     return false;
             }
         }else{
@@ -280,31 +279,36 @@ public class MinecraftBot implements Poofable {
             return;
         }
 
-        MinecraftProtocol protocol = new MinecraftProtocol(SubProtocol.STATUS);
+        MinecraftProtocol protocol;
+
+        if (isForge) {
+            getLogger().info("\tForge: overwriting default status packet in order to fetch mod list");
+            protocol = new ForgeMinecraftProtocol(SubProtocol.STATUS);
+        }else{
+            protocol = new MinecraftProtocol(SubProtocol.STATUS);
+        }
+
         client = new Client(HOST, PORT, protocol, new TcpSessionFactory(proxy));
         client.getSession().setFlag(MinecraftConstants.AUTH_PROXY_KEY, proxy);
-        client.getSession().setFlag(MinecraftConstants.SERVER_INFO_HANDLER_KEY, new ServerInfoHandler() {
-            @Override
-            public void handle(Session session, ServerStatusInfo info) {
-                getLogger().setDisabled(!FLAG_PRINT_SERVER_INFO);
-                if (isDebug()){
-                    getLogger().info("Version: " + info.getVersionInfo().getVersionName() + ", " + info.getVersionInfo().getProtocolVersion());
-                    getLogger().info("Player Count: " + info.getPlayerInfo().getOnlinePlayers() + " / " + info.getPlayerInfo().getMaxPlayers());
-                    getLogger().info("Players: " + Arrays.toString(info.getPlayerInfo().getPlayers()));
-                    getLogger().info("Icon: " + info.getIcon());
-                }else{
-                    getLogger().info("Target server is online with " + info.getPlayerInfo().getOnlinePlayers() + " players.");
-                    getLogger().info("Version: " + info.getVersionInfo().getVersionName());// + ", Description: " + parseTextMessage(info.getDescription().toJsonString()).replace("\n", "").replace("\r", ""));
-                }
-
-                String MOTD = parseTextMessage(info.getDescription().toJsonString());
-                String[] lines = MOTD.split("\n");
-                getLogger().info("Description: " + lines[0]);
-                if (lines.length > 1) // this is bad i know
-                    getLogger().info("             " + lines[1]);
-
-                getLogger().setDisabled(false);
+        client.getSession().setFlag(MinecraftConstants.SERVER_INFO_HANDLER_KEY, (ServerInfoHandler) (session, info) -> {
+            getLogger().setDisabled(!FLAG_PRINT_SERVER_INFO);
+            if (isDebug()){
+                getLogger().info("Version: " + info.getVersionInfo().getVersionName() + ", " + info.getVersionInfo().getProtocolVersion());
+                getLogger().info("Player Count: " + info.getPlayerInfo().getOnlinePlayers() + " / " + info.getPlayerInfo().getMaxPlayers());
+                getLogger().info("Players: " + Arrays.toString(info.getPlayerInfo().getPlayers()));
+                getLogger().info("Icon: " + info.getIcon());
+            }else{
+                getLogger().info("Target server is online with " + info.getPlayerInfo().getOnlinePlayers() + " players.");
+                getLogger().info("Version: " + info.getVersionInfo().getVersionName());// + ", Description: " + parseTextMessage(info.getDescription().toJsonString()).replace("\n", "").replace("\r", ""));
             }
+
+            String MOTD = parseTextMessage(info.getDescription().toJsonString());
+            String[] lines = MOTD.split("\n");
+            getLogger().info("Description: " + lines[0]);
+            if (lines.length > 1) // this is bad i know
+                getLogger().info("             " + lines[1]);
+
+            getLogger().setDisabled(false);
         });
 
         client.getSession().setFlag(MinecraftConstants.SERVER_PING_TIME_HANDLER_KEY, new ServerPingTimeHandler() {
@@ -314,10 +318,29 @@ public class MinecraftBot implements Poofable {
             }
         });
 
+        client.getSession().addListener(new SessionListener() {
+            @Override
+            public void packetReceived(PacketReceivedEvent packetReceivedEvent) {
+                PluginManager.getInstance().fireEvent(new StatusPacketReceivedEvent(packetReceivedEvent));
+            }
+            @Override
+            public void packetSent(PacketSentEvent packetSentEvent) {
+                PluginManager.getInstance().fireEvent(new StatusPacketSentEvent(packetSentEvent));
+            }
+            @Override
+            public void packetSending(PacketSendingEvent packetSendingEvent) { }
+            @Override
+            public void connected(ConnectedEvent connectedEvent) { }
+            @Override
+            public void disconnecting(DisconnectingEvent disconnectingEvent) { }
+            @Override
+            public void disconnected(DisconnectedEvent disconnectedEvent) { }
+        });
+
         client.getSession().connect();
         while(client.getSession().isConnected()) {
             try {
-                Thread.sleep(5);
+                Thread.sleep(1);
             } catch(InterruptedException e) {
                 e.printStackTrace();
             }
@@ -338,6 +361,7 @@ public class MinecraftBot implements Poofable {
                     getLogger().info("Successfully authenticated user " + protocol.getProfile().getName() + "!");
                 } catch(RequestException e) {
                     if (e instanceof InvalidCredentialsException) {
+                        if (isDebug()) e.printStackTrace();
                         getLogger().severe("Couldn't log in: Invalid credentials");
                         getLogger().severe("Quitting");
                         System.exit(0);
@@ -386,7 +410,7 @@ public class MinecraftBot implements Poofable {
             getLogger().info("Not using a proxy.");
         }
 
-        client = new Client(HOST, PORT, protocol, new TcpSessionFactory(proxy));
+        client = new Client(HOST + (isForge ? "\u0000FML\u0000" : ""), PORT, protocol, new TcpSessionFactory(proxy));
         client.getSession().setFlag(MinecraftConstants.AUTH_PROXY_KEY, proxy);
         client.getSession().addListener(new SessionAdapter() {
             @Override
