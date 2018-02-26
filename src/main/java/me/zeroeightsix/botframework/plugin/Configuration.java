@@ -3,9 +3,9 @@ package me.zeroeightsix.botframework.plugin;
 import com.google.gson.*;
 
 import java.io.*;
-import java.util.Arrays;
+import java.lang.reflect.Array;
 import java.util.HashMap;
-import java.util.stream.IntStream;
+import java.util.Map;
 
 /**
  * A simple but powerful configuration class for all of your configuring needs.
@@ -25,7 +25,7 @@ public class Configuration {
     /**
      * The user-provided defaults: if something is missing in the configuration, this is the next step.
      */
-    HashMap<String, JsonElement> defaultMap = new HashMap<>();
+    Map<String, JsonElement> defaultMap = new HashMap<>();
     /**
      * Enable/disable defaults. If this is false, no defaults will be returned when getting elements.
      */
@@ -37,7 +37,7 @@ public class Configuration {
      * Returns whether or not defaults are currently enabled
      * @return
      */
-    public boolean isAllowDefaults() {
+    public boolean doesAllowDefaults() {
         return allowDefaults;
     }
 
@@ -240,7 +240,7 @@ public class Configuration {
      * @return
      */
     public Configuration setDefaultCharacterArray(String path, char[] array) {
-        setDefault(path, createArray(IntStream.range(0, array.length).mapToObj(i -> array[i]).toArray(Character[]::new)));
+        setDefault(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -251,7 +251,7 @@ public class Configuration {
      * @return
      */
     public Configuration setDefaultBooleanArray(String path, boolean[] array) {
-        setDefault(path, createArray(IntStream.range(0, array.length).mapToObj(i -> array[i]).toArray(Boolean[]::new)));
+        setDefault(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -262,7 +262,7 @@ public class Configuration {
      * @return
      */
     public Configuration setDefaultIntArray(String path, int[] array) {
-        setDefault(path, createArray(Arrays.stream(array).boxed().toArray(Integer[]::new))); // int[] -> Integer[]
+        setDefault(path, createArray(toObjectArray(array))); // int[] -> Integer[]
         return this;
     }
 
@@ -273,7 +273,7 @@ public class Configuration {
      * @return
      */
     public Configuration setDefaultByteArray(String path, byte[] array) {
-        setDefault(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        setDefault(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -284,7 +284,7 @@ public class Configuration {
      * @return
      */
     public Configuration setDefaultFloatArray(String path, float[] array) {
-        setDefault(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        setDefault(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -295,7 +295,7 @@ public class Configuration {
      * @return
      */
     public Configuration setDefaultDoubleArray(String path, double[] array) {
-        setDefault(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        setDefault(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -306,7 +306,7 @@ public class Configuration {
      * @return
      */
     public Configuration setDefaultShortArray(String path, short[] array) {
-        setDefault(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        setDefault(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -317,7 +317,7 @@ public class Configuration {
      * @return
      */
     public Configuration setDefaultLongArray(String path, long[] array) {
-        setDefault(path, createArray(IntStream.range(0, array.length).mapToLong(i -> array[i]).boxed().toArray(Long[]::new)));
+        setDefault(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -328,13 +328,13 @@ public class Configuration {
      */
     public JsonElement getJsonElementOrDefault(String path) {
         JsonElement element = getJsonElement(path);
-        if (element == null && isAllowDefaults()) element = getDefault(path);
+        if (element == null && doesAllowDefaults()) element = getDefault(path);
         return element;
     }
 
     private JsonElement getJsonElementOrDefaultOrException(String path) {
         JsonElement element = getJsonElement(path);
-        if (element == null && isAllowDefaults()) element = getDefault(path);
+        if (element == null && doesAllowDefaults()) element = getDefault(path);
         if (element == null) throw new IllegalStateException("No value for path: " + path);
         return element;
     }
@@ -548,7 +548,7 @@ public class Configuration {
      * @return
      */
     public Configuration setCharacterArray(String path, char[] array) {
-        set(path, createArray(IntStream.range(0, array.length).mapToObj(i -> array[i]).toArray(Character[]::new)));
+        set(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -559,7 +559,7 @@ public class Configuration {
      * @return
      */
     public Configuration setBooleanArray(String path, boolean[] array) {
-        set(path, createArray(IntStream.range(0, array.length).mapToObj(i -> array[i]).toArray(Boolean[]::new)));
+        set(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -570,7 +570,7 @@ public class Configuration {
      * @return
      */
     public Configuration setIntArray(String path, int[] array) {
-        set(path, createArray(Arrays.stream(array).boxed().toArray(Integer[]::new))); // int[] -> Integer[]
+        set(path, createArray(toObjectArray(array))); // int[] -> Integer[]
         return this;
     }
 
@@ -581,7 +581,7 @@ public class Configuration {
      * @return
      */
     public Configuration setByteArray(String path, byte[] array) {
-        set(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        set(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -592,7 +592,7 @@ public class Configuration {
      * @return
      */
     public Configuration setFloatArray(String path, float[] array) {
-        set(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        set(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -603,7 +603,7 @@ public class Configuration {
      * @return
      */
     public Configuration setDoubleArray(String path, double[] array) {
-        set(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        set(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -614,7 +614,7 @@ public class Configuration {
      * @return
      */
     public Configuration setShortArray(String path, short[] array) {
-        set(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        set(path, createArray(toObjectArray(array)));
         return this;
     }
 
@@ -625,8 +625,28 @@ public class Configuration {
      * @return
      */
     public Configuration setLongArray(String path, long[] array) {
-        set(path, createArray(IntStream.range(0, array.length).mapToLong(i -> array[i]).boxed().toArray(Long[]::new)));
+        set(path, createArray(toObjectArray(array)));
         return this;
+    }
+
+    /**
+     * Convert an array of primitives to object array
+     *
+     * @param array array of primitives
+     * @return new Object array of wrapper types
+     */
+    private static Object[] toObjectArray(Object array) {
+        if (!array.getClass().isArray())
+            throw new IllegalArgumentException("Argument must be an array");
+        if (array instanceof Object[])
+            throw new IllegalArgumentException("Input is already an Object array");
+
+        int len = Array.getLength(array);
+        Object[] newArray = new Object[len];
+        for (int i = 0; i < len; i++) {
+            newArray[i] = Array.get(array, i);
+        }
+        return newArray;
     }
 
     /**
