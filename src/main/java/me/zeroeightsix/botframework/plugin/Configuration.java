@@ -107,14 +107,14 @@ public class Configuration {
     public void load(File readFrom) {
         try {
             JsonParser parser = new JsonParser();
-            try {
-                JsonObject obj = parser.parse(new FileReader(readFrom)).getAsJsonObject();
+            try (FileReader fr = new FileReader(readFrom)){
+                JsonObject obj = parser.parse(fr).getAsJsonObject();
                 rootJson = obj;
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }catch (IllegalStateException e) {
-            rootJson = new JsonParser().parse("{}").getAsJsonObject();
+            rootJson = new JsonObject();
         }
     }
 
@@ -122,7 +122,7 @@ public class Configuration {
         try{
             rootJson = new JsonParser().parse(json).getAsJsonObject();
         }catch (IllegalStateException e) {
-            rootJson = new JsonParser().parse("{}").getAsJsonObject();
+            rootJson = new JsonObject();
         }
     }
 
@@ -142,9 +142,9 @@ public class Configuration {
     public void save(File file) throws IOException {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String s = gson.toJson(rootJson);
-        FileWriter writer = new FileWriter(file);
-        writer.write(s);
-        writer.close();
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(s);
+        }
     }
 
     /**
