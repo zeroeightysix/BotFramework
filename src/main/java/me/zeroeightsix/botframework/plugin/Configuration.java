@@ -213,7 +213,104 @@ public class Configuration {
         setDefault(path, createPrimitive(string));
     }
 
+    /**
+     * Set the value of a given path in the defaults map to a string array
+     * @param path
+     * @param array
+     * @return
+     */
+    public Configuration setDefaultStringArray(String path, String[] array) {
+        setDefault(path, createArray(array));
+        return this;
+    }
 
+    /**
+     * Set the value of a given path in the defaults map to a character array
+     * @param path
+     * @param array
+     * @return
+     */
+    public Configuration setDefaultCharacterArray(String path, char[] array) {
+        setDefault(path, createArray(IntStream.range(0, array.length).mapToObj(i -> array[i]).toArray(Character[]::new)));
+        return this;
+    }
+
+    /**
+     * Set the value of a given path in the defaults map to a boolean array
+     * @param path
+     * @param array
+     * @return
+     */
+    public Configuration setDefaultBooleanArray(String path, boolean[] array) {
+        setDefault(path, createArray(IntStream.range(0, array.length).mapToObj(i -> array[i]).toArray(Boolean[]::new)));
+        return this;
+    }
+
+    /**
+     * Set the value of a given path in the defaults map to a integer array
+     * @param path
+     * @param array
+     * @return
+     */
+    public Configuration setDefaultIntArray(String path, int[] array) {
+        setDefault(path, createArray(Arrays.stream(array).boxed().toArray(Integer[]::new))); // int[] -> Integer[]
+        return this;
+    }
+
+    /**
+     * Set the value of a given path in the defaults map to a byte array
+     * @param path
+     * @param array
+     * @return
+     */
+    public Configuration setDefaultByteArray(String path, byte[] array) {
+        setDefault(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        return this;
+    }
+
+    /**
+     * Set the value of a given path in the defaults map to a float array
+     * @param path
+     * @param array
+     * @return
+     */
+    public Configuration setDefaultFloatArray(String path, float[] array) {
+        setDefault(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        return this;
+    }
+
+    /**
+     * Set the value of a given path in the defaults map to a double array
+     * @param path
+     * @param array
+     * @return
+     */
+    public Configuration setDefaultDoubleArray(String path, double[] array) {
+        setDefault(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        return this;
+    }
+
+    /**
+     * Set the value of a given path in the defaults map to a short array
+     * @param path
+     * @param array
+     * @return
+     */
+    public Configuration setDefaultShortArray(String path, short[] array) {
+        setDefault(path, createArray(IntStream.range(0, array.length).mapToDouble(i -> array[i]).boxed().toArray(Double[]::new)));
+        return this;
+    }
+
+    /**
+     * Set the value of a given path in the defaults map to an array of longs
+     * @param path
+     * @param array
+     * @return
+     */
+    public Configuration setDefaultLongArray(String path, long[] array) {
+        setDefault(path, createArray(IntStream.range(0, array.length).mapToLong(i -> array[i]).boxed().toArray(Long[]::new)));
+        return this;
+    }
 
     /**
      * Get a value from the configuration as a JsonElement. If not present, returns from the defaults.

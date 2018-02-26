@@ -81,7 +81,7 @@ public class MinecraftBot implements Poofable {
     private static MinecraftBot INSTANCE;
     public static GameProfile SELF_PROFILE;
     private String SELF_TOKEN;
-    public static final String BUILD_NUMBER = "54";
+    public static final String BUILD_NUMBER = "55";
     private String BOTFRAMEWORKVERSION = "build " + BUILD_NUMBER;
     Locale locale;
 

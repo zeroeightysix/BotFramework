@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = 'me.zeroeightsix.botframework'
-version = '54'
+version = '55'
 
 description = "Advanced minecraft bot framework wrapping around mcprotocollib"
 
