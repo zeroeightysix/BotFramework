@@ -91,7 +91,20 @@ public class Configuration {
         load("{}");
     }
 
-    private void load(File readFrom) {
+    /**
+     * Load this configuration again from the specified configuration file
+     */
+    public void reload() {
+        if (configurationFile == null)
+            throw new IllegalStateException("Cannot load: no file specified");
+        load(configurationFile);
+    }
+
+    /**
+     * Load this configuration from a file
+     * @param readFrom
+     */
+    public void load(File readFrom) {
         try {
             JsonParser parser = new JsonParser();
             try {
