@@ -129,7 +129,7 @@ public class Configuration {
     /**
      * Save the current configuration to the pre-defined configuration file
      */
-    public void save() {
+    public void save() throws IOException {
         if (configurationFile == null)
             throw new IllegalStateException("Cannot save: no file specified");
         save(configurationFile);
@@ -139,16 +139,12 @@ public class Configuration {
      * Save the current configuration to the specified file
      * @param file
      */
-    public void save(File file) {
+    public void save(File file) throws IOException {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String s = gson.toJson(rootJson);
-        try {
-            FileWriter writer = new FileWriter(file);
-            writer.write(s);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileWriter writer = new FileWriter(file);
+        writer.write(s);
+        writer.close();
     }
 
     /**

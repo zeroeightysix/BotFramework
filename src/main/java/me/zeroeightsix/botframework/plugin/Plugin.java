@@ -46,9 +46,8 @@ public abstract class Plugin {
         if (!dataFolder.exists() || !dataFolder.isDirectory()){
             if (!dataFolder.mkdir())
                 getLogger().warn("Unable to create plugin data folder: Will cause issues!");
-            else
-                configuration = new Configuration(new File(dataFolder, String.format("%s.cfg", name)));
         }
+        configuration = new Configuration(new File(dataFolder, String.format("%s.cfg", name)));
         queue.start();
     }
 
