@@ -86,8 +86,8 @@ public class CommandProcessor implements Poofable {
         return this;
     }
 
-    public CommandProcessor setDeniedMessageCondition(UnaryOperator<String> messageOperator) {
-        this.deniedMessage = messageOperator;
+    public CommandProcessor setDeniedMessage(UnaryOperator<String> messageGenerator) {
+        this.deniedMessage = messageGenerator;
         return this;
     }
 
