@@ -4,6 +4,7 @@ import com.google.gson.*;
 
 import java.io.*;
 import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -538,6 +539,11 @@ public class Configuration {
      */
     public Configuration setStringArray(String path, String[] array) {
         set(path, createArray(array));
+        return this;
+    }
+
+    public Configuration setStringArray(String path, Collection<String> list) {
+        set(path, createArray(list.toArray()));
         return this;
     }
 
