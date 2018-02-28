@@ -14,6 +14,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public abstract class Plugin {
 
@@ -151,6 +152,15 @@ public abstract class Plugin {
         return count == 0 ||
                 (Plugin.class.isAssignableFrom(c.getParameterTypes()[0]) && count == 1);
     }
+
+    @SuppressWarnings("unchecked")
+    public <T extends ChatCommand> Optional<T> getCommandByClass(Class<T> clazz) {
+        return getChatCommands().stream()
+                .filter(command -> command.getClass() == clazz)
+                .map(command -> (T)command)
+                .findFirst();
+    }
+
 
     public Configuration getConfiguration() { return configuration; }
     public ArrayList<Command> getInternalCommands() {
