@@ -43,7 +43,7 @@ public abstract class Plugin {
         this.name = name;
         this.version = version;
         this.description = description;
-        this.dataFolder = new File("Plugins/" + name);
+        this.dataFolder = new File("Plugins", name);
         if (!dataFolder.exists() || !dataFolder.isDirectory()){
             if (!dataFolder.mkdir())
                 getLogger().warn("Unable to create plugin data folder: Will cause issues!");
